@@ -1,6 +1,7 @@
 from django.db import models
 
 
+
 class User(models.Model):
 
     user_id = models.IntegerField()
@@ -64,6 +65,7 @@ class Issue(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class Comment(models.Model):
 
