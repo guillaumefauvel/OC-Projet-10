@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from api.views import UserAPIView, ProjectAPIView, IssueAPIView, CommentAPIView, ProjectUserView
+from api.views import UserAPIView, ProjectAPIView, IssueAPIView, CommentAPIView, ProjectUserView, MyModelViewSet
 
 router = routers.SimpleRouter()
 
@@ -12,7 +12,7 @@ router.register('issues', IssueAPIView, basename='issues')
 router.register('comments', CommentAPIView, basename='comments')
 
 project_router = routers.SimpleRouter()
-project_router.register('([0-9]+)/users', ProjectUserView, basename='test')
+project_router.register('([0-9]+)/users', MyModelViewSet, basename='test')
 
 
 urlpatterns = [

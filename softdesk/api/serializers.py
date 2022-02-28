@@ -7,9 +7,26 @@ from .models import User, Contributors, Project, Issue, Comment
 class UserListSerializer(ModelSerializer):
 
     class Meta:
-        model = User
-        fields = ['id', 'first_name', 'last_name']
+            model = User
+            fields = ['id', 'first_name', 'last_name']
 
+
+class UserChoiceSerializer(ModelSerializer):
+
+    USER_CHOICE = list((user.id, str(user.first_name)+str(user.last_name)) for user in User.objects.all())
+
+    PERMISSION_CHOICES = (
+        ('Author','Author'),
+        ('Contributor','Contributor'),
+    )
+
+    project_id = serializers.HiddenField(default=1)
+    user_id = serializers.ChoiceField(choices=USER_CHOICE)
+    permission = serializers.ChoiceField(choices=PERMISSION_CHOICES)
+
+    class Meta:
+        model = Contributors
+        fields = ['user_id', 'permission', 'role', 'project_id']
 
 class UserDetailSerializer(ModelSerializer):
 
