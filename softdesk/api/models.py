@@ -4,7 +4,6 @@ from django.db import models
 
 class User(models.Model):
 
-    user_id = models.IntegerField()
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     email = models.EmailField(max_length=32)
@@ -12,6 +11,19 @@ class User(models.Model):
 
     def __str__(self):
         return str(self.first_name) + str(self.last_name)
+
+
+class Contributors(models.Model):
+
+    PERMISSION_CHOICES = (
+        ('Author','Author'),
+        ('Contributor','Contributor'),
+    )
+
+    user_id = models.IntegerField()
+    project_id = models.IntegerField()
+    permission = models.CharField(choices=PERMISSION_CHOICES, max_length=32)
+    role = models.CharField(max_length=32)
 
 
 class Project(models.Model):
@@ -22,7 +34,6 @@ class Project(models.Model):
         ('IOS', 'IOS')
     )
 
-    project_id = models.IntegerField()
     title = models.CharField(max_length=32)
     description = models.CharField(max_length=256)
     type = models.CharField(choices=TYPES, max_length=32)
@@ -69,7 +80,6 @@ class Issue(models.Model):
 
 class Comment(models.Model):
 
-    comment_id = models.IntegerField()
     description = models.CharField(max_length=256)
     author_user_id = models.ForeignKey('User', on_delete=models.CASCADE, related_name='auth_comments')
     issue_id = models.ForeignKey('Issue', on_delete=models.CASCADE, related_name='issue_comments')
