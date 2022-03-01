@@ -94,27 +94,7 @@ class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
         return Comment.objects.all()
 
 
-class ProjectUserView(ModelViewSet):
-
-    serializer_class = UserListSerializer
-
-    def get_queryset(self):
-
-        project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-        contributors = Contributors.objects.filter(project_id=project_id)
-        contributors_user = [User.objects.get(id=user.id) for user in contributors]
-
-        return contributors_user
-
-    def post(self, request, format=None):
-        serializer = UserChoiceSerializer(value=1)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MyModelViewSet(ReadWriteSerializerMixin, viewsets.ModelViewSet):
+class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
     read_serializer_class = UserListSerializer
     write_serializer_class = UserChoiceSerializer
@@ -122,8 +102,9 @@ class MyModelViewSet(ReadWriteSerializerMixin, viewsets.ModelViewSet):
     def get_queryset(self):
 
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
+
         contributors = Contributors.objects.filter(project_id=self.project_id)
-        contributors_user = [User.objects.get(id=user.id) for user in contributors]
+        contributors_user = [User.objects.get(id=contrib.user_id) for contrib in contributors]
 
         return contributors_user
 
@@ -134,3 +115,21 @@ class MyModelViewSet(ReadWriteSerializerMixin, viewsets.ModelViewSet):
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ProjectUserDetailView(ModelViewSet):
+
+    serializer_class = UserDetailSerializer
+
+    def get_queryset(self):
+
+        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
+        contributors = Contributors.objects.filter(project_id=self.project_id)
+        contributors = [contrib.user_id for contrib in contributors]
+        self.user_id = str(self.request).split("/")[5]
+
+        if int(self.user_id) in contributors:
+
+            contributor_user = User.objects.get(id=self.user_id)
+            return [contributor_user]
+
+        return []

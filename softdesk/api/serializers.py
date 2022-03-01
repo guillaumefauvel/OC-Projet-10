@@ -20,13 +20,14 @@ class UserChoiceSerializer(ModelSerializer):
         ('Contributor','Contributor'),
     )
 
-    project_id = serializers.HiddenField(default=1)
+    project_id = serializers.HiddenField(default=1) # TODO - Adapt
     user_id = serializers.ChoiceField(choices=USER_CHOICE)
     permission = serializers.ChoiceField(choices=PERMISSION_CHOICES)
 
     class Meta:
         model = Contributors
         fields = ['user_id', 'permission', 'role', 'project_id']
+
 
 class UserDetailSerializer(ModelSerializer):
 
