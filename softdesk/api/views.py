@@ -6,8 +6,7 @@ from rest_framework import status, viewsets, request
 
 from .models import User, Contributors, Project, Issue, Comment
 from .serializers import UserListSerializer, UserDetailSerializer, ProjectListSerializer, ProjectDetailSerializer,\
-    IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, UserChoiceSerializer
-
+    IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, UserChoiceSerializer, ProjectUserDetailSerializer
 
 class ReadWriteSerializerMixin(object):
     """
@@ -119,7 +118,8 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
 class ProjectUserDetailView(ModelViewSet):
 
-    serializer_class = UserDetailSerializer
+    serializer_class = ProjectUserDetailSerializer
+    http_method_names = ['get', 'head']
 
     def get_queryset(self):
 
@@ -134,6 +134,7 @@ class ProjectUserDetailView(ModelViewSet):
             return [contributor_user]
 
         return [] # TODO Lever exception -> Utilisateur non contributeur ou Inexistant
+
 
 
 

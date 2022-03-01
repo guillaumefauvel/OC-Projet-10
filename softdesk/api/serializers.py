@@ -43,6 +43,25 @@ class UserDetailSerializer(ModelSerializer):
         return serializer.data
 
 
+class ProjectUserDetailSerializer(ModelSerializer):
+
+    issue_comments = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'issue_comments']
+
+    def get_issue_comments(self, instance):
+
+        project = str(self.context['request']).split()[2].split('/')[3] # TODO A changer
+        issues = Issue.objects.filter(auth_user_id=instance.id)
+        issues = [issue for issue in issues if issue.project_id.id == int(project)]
+
+        serializer = IssueListSerializer(issues, many=True)
+
+        return serializer.data
+
+
 class ContributorListSerializer(ModelSerializer):
 
     class Meta:
