@@ -81,11 +81,18 @@ class IssueListSerializer(ModelSerializer):
 class IssueDetailSerializer(ModelSerializer):
 
     issue_comments = serializers.SerializerMethodField()
+    project_id = serializers.SerializerMethodField('get_proj_id')
+
+    def get_proj_id(self, obj):
+
+        project_id = int(str(self.context['request']).split()[2].split('/')[3]) # TODO Changer l'obtention
+
+        return project_id
 
     class Meta:
         model = Issue
         fields = ['id', 'title', 'tag', 'priority', 'desc', 'status',
-                  'project_id', 'auth_user_id', 'created_time', 'issue_comments']
+                  'project_id', 'assignee_user_id', 'auth_user_id', 'created_time', 'issue_comments']
 
     def get_issue_comments(self, instance):
         queryset = instance.issue_comments.all()

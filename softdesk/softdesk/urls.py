@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from api.views import UserAPIView, ProjectAPIView, IssueAPIView, CommentAPIView, ProjectUserView, ProjectUserDetailView
+from api.views import UserAPIView, ProjectAPIView, IssueAPIView, CommentAPIView, ProjectUserView, ProjectUserDetailView, ProjectIssueView, ProjectCommentView
 
 router = routers.SimpleRouter()
 
@@ -12,10 +12,13 @@ router.register('issues', IssueAPIView, basename='issues')
 router.register('comments', CommentAPIView, basename='comments')
 
 project_router = routers.SimpleRouter()
-project_router.register('([0-9]+)/users', ProjectUserView, basename='users-project')
 
-project_router.register('([0-9]+)/users/([0-9]+)', ProjectUserDetailView, basename='user-project')
+project_router.register('([0-9]+)/users', ProjectUserView, basename='users-project')
+# project_router.register('([0-9]+)/users/([0-9]+)', ProjectUserDetailView, basename='user-project')
 # TODO - Régler problème de double emploi
+
+project_router.register('([0-9]+)/issues', ProjectIssueView, basename='issues-project')
+project_router.register('([0-9]+)/issues/([0-9]+)/comments', ProjectCommentView, basename='comments-project')
 
 
 urlpatterns = [

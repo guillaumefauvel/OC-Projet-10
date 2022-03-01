@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, request
 
 from .models import User, Contributors, Project, Issue, Comment
 from .serializers import UserListSerializer, UserDetailSerializer, ProjectListSerializer, ProjectDetailSerializer,\
@@ -108,13 +108,14 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
         return contributors_user
 
-    def post(self, request, format=None):
+    # def post(self, request, format=None):
+    #
+    #     serializer = UserChoiceSerializer(context={'projet_id': self.project_id})
+    #
+    #     if serializer.is_valid():
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = UserChoiceSerializer(context={'projet_id': self.project_id})
-
-        if serializer.is_valid():
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ProjectUserDetailView(ModelViewSet):
 
@@ -131,5 +132,38 @@ class ProjectUserDetailView(ModelViewSet):
 
             contributor_user = User.objects.get(id=self.user_id)
             return [contributor_user]
+
+        return [] # TODO Lever exception -> Utilisateur non contributeur ou Inexistant
+
+
+
+class ProjectIssueView(ReadWriteSerializerMixin, ModelViewSet):
+
+    read_serializer_class = IssueDetailSerializer
+    write_serializer_class = IssueDetailSerializer
+
+    def get_queryset(self):
+
+        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
+        issues = Issue.objects.filter(project_id=self.project_id)
+
+        return issues
+
+
+class ProjectCommentView(ReadWriteSerializerMixin, ModelViewSet):
+
+    read_serializer_class = CommentListSerializer
+    write_serializer_class = CommentDetailSerializer
+
+    def get_queryset(self):
+
+        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
+        issues = [issue.id for issue in Issue.objects.filter(project_id=self.project_id)]
+
+        self.issue_id = str(self.request).split("/")[5]
+
+        if int(self.issue_id) in issues:
+            comments = Comment.objects.filter(issue_id=self.issue_id)
+            return comments
 
         return []
