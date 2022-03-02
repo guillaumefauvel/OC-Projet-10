@@ -13,9 +13,8 @@ router.register('comments', CommentAPIView, basename='comments')
 
 project_router = routers.SimpleRouter()
 
-# project_router.register('([0-9]+)/users', ProjectUserView, basename='users-project')
-project_router.register('([0-9]+)/users/([0-9]+)', ProjectUserDetailView, basename='user-project')
-# TODO - Régler problème de double emploi
+project_router.register('([0-9]+)/users/([0-9]+)', ProjectUserDetailView, basename='user-project') # TODO Changer REGEX
+project_router.register('([0-9]+)/users', ProjectUserView, basename='users-project')
 
 project_router.register('([0-9]+)/issues', ProjectIssueView, basename='issues-project')
 project_router.register('([0-9]+)/issues/([0-9]+)/comments', ProjectCommentView, basename='comments-project')

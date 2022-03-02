@@ -20,13 +20,16 @@ class UserChoiceSerializer(ModelSerializer):
         ('Contributor','Contributor'),
     )
 
-    project_id = serializers.HiddenField(default=1) # TODO - Adapt
+    PROJECT_CHOICE = [(project.id, str(project)) for project in Project.objects.all()] # TODO - A changer pour être automatique
+
+    project_id = serializers.ChoiceField(choices=PROJECT_CHOICE)
     user_id = serializers.ChoiceField(choices=USER_CHOICE)
     permission = serializers.ChoiceField(choices=PERMISSION_CHOICES)
 
     class Meta:
         model = Contributors
         fields = ['user_id', 'permission', 'role', 'project_id']
+
 
 
 class UserDetailSerializer(ModelSerializer):
@@ -46,6 +49,7 @@ class UserDetailSerializer(ModelSerializer):
 class ProjectUserDetailSerializer(ModelSerializer):
 
     issue_comments = serializers.SerializerMethodField()
+
 
     class Meta:
         model = User
@@ -67,6 +71,13 @@ class ContributorListSerializer(ModelSerializer):
     class Meta:
         model = Contributors
         fields = ['user_id', 'project_id', 'permission']
+
+
+class ContributorDetailSerializer(ModelSerializer):
+
+    class Meta:
+        model = Contributors
+        fields = ['user_id', 'project_id', 'permission', 'role']
 
 
 class ProjectListSerializer(ModelSerializer):
@@ -100,18 +111,16 @@ class IssueListSerializer(ModelSerializer):
 class IssueDetailSerializer(ModelSerializer):
 
     issue_comments = serializers.SerializerMethodField()
-    project_id = serializers.SerializerMethodField('get_proj_id')
-
-    def get_proj_id(self, obj):
-
-        project_id = int(str(self.context['request']).split()[2].split('/')[3]) # TODO Changer l'obtention
-
-        return project_id
+    project_id = serializers.SerializerMethodField('get_project_id')
 
     class Meta:
         model = Issue
         fields = ['id', 'title', 'tag', 'priority', 'desc', 'status',
                   'project_id', 'assignee_user_id', 'auth_user_id', 'created_time', 'issue_comments']
+
+    def get_project_id(self, obj):
+
+        return obj.project_id.id
 
     def get_issue_comments(self, instance):
         queryset = instance.issue_comments.all()

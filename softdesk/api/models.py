@@ -21,7 +21,7 @@ class Contributors(models.Model):
 
     user_id = models.IntegerField()
     project_id = models.IntegerField()
-    permission = models.CharField(choices=PERMISSION_CHOICES, max_length=32)
+    permission = models.CharField(choices=PERMISSION_CHOICES, max_length=32) # TODO Plus technique
     role = models.CharField(max_length=32)
 
     def __str__(self):
@@ -72,7 +72,7 @@ class Issue(models.Model):
     desc = models.CharField(max_length=256)
     tag = models.CharField(choices=TAG_LIST, max_length=32)
     priority = models.CharField(choices=PRIORITY_LEVEL, max_length=32)
-    project_id = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='issues_project', null=True)
+    project_id = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='issues_project')
     status = models.CharField(choices=STATUS_LIST, max_length=32)
     auth_user_id = models.ForeignKey('User', on_delete=models.CASCADE, related_name='issues_auth')
     assignee_user_id = models.ForeignKey('User', on_delete=models.CASCADE, related_name='issues_assign')

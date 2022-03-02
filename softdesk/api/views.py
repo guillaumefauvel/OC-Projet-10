@@ -1,12 +1,9 @@
-from django.shortcuts import render, get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import status, viewsets, request
 
 from .models import User, Contributors, Project, Issue, Comment
 from .serializers import UserListSerializer, UserDetailSerializer, ProjectListSerializer, ProjectDetailSerializer,\
-    IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, UserChoiceSerializer, ProjectUserDetailSerializer
+    IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, UserChoiceSerializer, ProjectUserDetailSerializer, ContributorDetailSerializer
 
 class ReadWriteSerializerMixin(object):
     """
@@ -107,19 +104,35 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
         return contributors_user
 
-    # def post(self, request, format=None):
-    #
-    #     serializer = UserChoiceSerializer(context={'projet_id': self.project_id})
-    #
-    #     if serializer.is_valid():
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class ProjectUserDetailView(ReadWriteSerializerMixin, ModelViewSet): ## TODO Mixin Delete
+#
+#     # http_method_names = ['get', 'head', 'delete']
+#     read_serializer_class = ProjectUserDetailSerializer
+#     write_serializer_class = ProjectUserDetailSerializer
+#
+#     def get_queryset(self):
+#
+#         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
+#         contributors = Contributors.objects.filter(project_id=self.project_id)
+#         contributors = [contrib.user_id for contrib in contributors]
+#         self.user_id = str(self.request).split("/")[5]
+#
+#         if int(self.user_id) in contributors:
+#
+#             contributor_user = User.objects.get(id=self.user_id)
+#             return [contributor_user]
+#
+#         return [] # TODO Lever exception -> Utilisateur non contributeur ou Inexistant
 
 
-class ProjectUserDetailView(ModelViewSet):
+class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ReadWriteSerializerMixin, ModelViewSet): ## TODO Mixin Delete
 
-    serializer_class = ProjectUserDetailSerializer
-    http_method_names = ['get', 'head']
+    # TODO - Appliquer le principe DRY au possible
+
+    http_method_names = ['get', 'head', 'delete']
+    read_serializer_class = ContributorDetailSerializer
+    write_serializer_class = ContributorDetailSerializer
 
     def get_queryset(self):
 
@@ -129,14 +142,21 @@ class ProjectUserDetailView(ModelViewSet):
         self.user_id = str(self.request).split("/")[5]
 
         if int(self.user_id) in contributors:
-
-            contributor_user = User.objects.get(id=self.user_id)
+            contributor_user = Contributors.objects.filter(user_id=self.user_id).get(project_id=self.project_id)
             return [contributor_user]
 
         return [] # TODO Lever exception -> Utilisateur non contributeur ou Inexistant
 
+    def get_object(self):
 
+        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
+        contributors = Contributors.objects.filter(project_id=self.project_id)
+        contributors = [contrib.user_id for contrib in contributors]
+        self.user_id = str(self.request).split("/")[5]
 
+        contributor_user = Contributors.objects.filter(user_id=self.user_id).get(project_id=self.project_id)
+
+        return contributor_user
 
 class ProjectIssueView(ReadWriteSerializerMixin, ModelViewSet):
 
@@ -148,7 +168,12 @@ class ProjectIssueView(ReadWriteSerializerMixin, ModelViewSet):
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
         issues = Issue.objects.filter(project_id=self.project_id)
 
+        # i = Issue.objects.create()
+        # result = IssueDetailSerializer(i)
+        # print(result.data)
+
         return issues
+
 
 
 class ProjectCommentView(ReadWriteSerializerMixin, ModelViewSet):
