@@ -1,3 +1,4 @@
+from rest_framework import generics, mixins
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 
@@ -40,6 +41,9 @@ class ReadWriteSerializerMixin(object):
 
 
 class MultipleSerializerMixin:
+    """
+    Mixin that allow the use of a detailled serializer class
+    """
 
     detail_serializer_class = None
 
@@ -51,6 +55,11 @@ class MultipleSerializerMixin:
 
 
 class UserAPIView(MultipleSerializerMixin, ModelViewSet):
+    """
+    View that return two types a User object representation, list and detailled view.
+    It return every User object.
+    """
+
 
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
@@ -61,6 +70,11 @@ class UserAPIView(MultipleSerializerMixin, ModelViewSet):
 
 
 class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
+    """
+    View that return two types a Project object representation, list and detailled view
+    It return every Project object.
+
+    """
 
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
@@ -71,6 +85,11 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
 
 
 class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
+    """
+    View that return two types a Issue object representation, list and detailled view
+    It return every Issue object.
+
+    """
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
@@ -81,6 +100,11 @@ class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
 
 
 class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
+    """
+    View that return two types a Issue object representation, list and detailled view
+    It return every Comment object.
+
+    """
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
@@ -91,6 +115,12 @@ class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
 
 
 class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
+    """
+    View that return a two different serializers ( READ, and WRITE wich offer the possibility to select
+    a User in order to create a contribution relationship )
+    It return every Contributor attached to the selected Project.
+
+    """
 
     read_serializer_class = UserListSerializer
     write_serializer_class = UserChoiceSerializer
@@ -105,40 +135,21 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
         return contributors_user
 
 
-# class ProjectUserDetailView(ReadWriteSerializerMixin, ModelViewSet): ## TODO Mixin Delete
-#
-#     # http_method_names = ['get', 'head', 'delete']
-#     read_serializer_class = ProjectUserDetailSerializer
-#     write_serializer_class = ProjectUserDetailSerializer
-#
-#     def get_queryset(self):
-#
-#         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-#         contributors = Contributors.objects.filter(project_id=self.project_id)
-#         contributors = [contrib.user_id for contrib in contributors]
-#         self.user_id = str(self.request).split("/")[5]
-#
-#         if int(self.user_id) in contributors:
-#
-#             contributor_user = User.objects.get(id=self.user_id)
-#             return [contributor_user]
-#
-#         return [] # TODO Lever exception -> Utilisateur non contributeur ou Inexistant
 
-
-class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ReadWriteSerializerMixin, ModelViewSet): ## TODO Mixin Delete
+class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
+    """
+    View that return the view of a contribution relation object.
+    """
 
     # TODO - Appliquer le principe DRY au possible
 
+    serializer_class = ContributorDetailSerializer
     http_method_names = ['get', 'head', 'delete']
-    read_serializer_class = ContributorDetailSerializer
-    write_serializer_class = ContributorDetailSerializer
 
     def get_queryset(self):
 
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-        contributors = Contributors.objects.filter(project_id=self.project_id)
-        contributors = [contrib.user_id for contrib in contributors]
+        contributors = [contrib.user_id for contrib in Contributors.objects.filter(project_id=self.project_id)]
         self.user_id = str(self.request).split("/")[5]
 
         if int(self.user_id) in contributors:
@@ -158,28 +169,32 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ReadWriteSerializerMix
 
         return contributor_user
 
-class ProjectIssueView(ReadWriteSerializerMixin, ModelViewSet):
 
-    read_serializer_class = IssueDetailSerializer
-    write_serializer_class = IssueDetailSerializer
+class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
+    """
+    View that return two types a Issue object representation, list and detailled view
+    It return every Issue attached to the selected Project.
+    """
+
+    serializer_class = IssueListSerializer
+    detail_serializer_class = IssueDetailSerializer
 
     def get_queryset(self):
 
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
         issues = Issue.objects.filter(project_id=self.project_id)
 
-        # i = Issue.objects.create()
-        # result = IssueDetailSerializer(i)
-        # print(result.data)
-
         return issues
 
 
+class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
+    """
+    View that return two types a Comment object representation, list and detailled view
+    It return every Comment attached to the selected Issue.
+    """
 
-class ProjectCommentView(ReadWriteSerializerMixin, ModelViewSet):
-
-    read_serializer_class = CommentListSerializer
-    write_serializer_class = CommentDetailSerializer
+    serializer_class = CommentListSerializer
+    detail_serializer_class = CommentDetailSerializer
 
     def get_queryset(self):
 

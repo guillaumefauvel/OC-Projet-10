@@ -1,7 +1,16 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.reverse import reverse
+from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer, HyperlinkedIdentityField
 from rest_framework import serializers
 
 from .models import User, Contributors, Project, Issue, Comment
+
+# from django.contrib.auth.models import User
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'password']
 
 
 class UserListSerializer(ModelSerializer):
@@ -31,7 +40,6 @@ class UserChoiceSerializer(ModelSerializer):
         fields = ['user_id', 'permission', 'role', 'project_id']
 
 
-
 class UserDetailSerializer(ModelSerializer):
 
     projects = serializers.SerializerMethodField()
@@ -49,7 +57,6 @@ class UserDetailSerializer(ModelSerializer):
 class ProjectUserDetailSerializer(ModelSerializer):
 
     issue_comments = serializers.SerializerMethodField()
-
 
     class Meta:
         model = User
@@ -124,7 +131,7 @@ class IssueDetailSerializer(ModelSerializer):
 
     def get_issue_comments(self, instance):
         queryset = instance.issue_comments.all()
-        serializer = CommentListSerializer(queryset, many=True)
+        serializer = CommentListSerializer(queryset, many=True, context={'request': self.instance}) # TODO
         return serializer.data
 
 
@@ -140,3 +147,4 @@ class CommentDetailSerializer(ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'issue_id', 'description', 'author_user_id', 'created_time']
+
