@@ -2,7 +2,20 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from api.views import UserAPIView, ProjectAPIView, IssueAPIView, CommentAPIView, ProjectUserView, ProjectUserDetailView, ProjectIssueView, ProjectCommentView
+from api.views import (
+    UserAPIView,
+    ProjectAPIView,
+    IssueAPIView,
+    CommentAPIView,
+    ProjectUserView,
+    ProjectUserDetailView,
+    ProjectIssueView,
+    ProjectCommentView
+)
+
+from login.views import (
+    UserCreateAPIView
+)
 
 router = routers.SimpleRouter()
 
@@ -21,11 +34,10 @@ project_router.register('([0-9]+)/issues/([0-9]+)/comments', ProjectCommentView,
 
 
 urlpatterns = [
-
     path('admin/', admin.site.urls),
+    path('signup/', UserCreateAPIView.as_view(), name='signup'),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
     path('api/projects/', include(project_router.urls)),
-
 ]
 

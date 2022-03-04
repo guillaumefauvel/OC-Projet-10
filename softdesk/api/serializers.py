@@ -122,8 +122,11 @@ class IssueDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = ['id', 'title', 'tag', 'priority', 'desc', 'status',
-                  'project_id', 'assignee_user_id', 'auth_user_id', 'created_time', 'issue_comments']
+        fields = ['id', 'title', 'tag',
+                  'priority', 'desc', 'status',
+                  'project_id', 'assignee_user_id',
+                  'auth_user_id', 'created_time',
+                  'issue_comments']
 
     def get_project_id(self, obj):
 

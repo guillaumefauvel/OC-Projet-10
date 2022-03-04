@@ -1,10 +1,19 @@
-from rest_framework import generics, mixins
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 
 from .models import User, Contributors, Project, Issue, Comment
-from .serializers import UserListSerializer, UserDetailSerializer, ProjectListSerializer, ProjectDetailSerializer,\
-    IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, UserChoiceSerializer, ProjectUserDetailSerializer, ContributorDetailSerializer
+from .serializers import (
+    UserListSerializer,
+    UserDetailSerializer,
+    ProjectListSerializer,
+    ProjectDetailSerializer,
+    IssueListSerializer,
+    IssueDetailSerializer,
+    CommentListSerializer,
+    CommentDetailSerializer,
+    UserChoiceSerializer,
+    ContributorDetailSerializer,
+)
 
 class ReadWriteSerializerMixin(object):
     """
