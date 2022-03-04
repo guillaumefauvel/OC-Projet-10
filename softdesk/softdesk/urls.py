@@ -14,7 +14,8 @@ from api.views import (
 )
 
 from login.views import (
-    UserCreateAPIView
+    UserCreateAPIView,
+    UserLoginAPIView,
 )
 
 router = routers.SimpleRouter()
@@ -36,6 +37,8 @@ project_router.register('([0-9]+)/issues/([0-9]+)/comments', ProjectCommentView,
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', UserCreateAPIView.as_view(), name='signup'),
+    path('login/', UserLoginAPIView.as_view(), name='login'),
+
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
     path('api/projects/', include(project_router.urls)),

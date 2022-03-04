@@ -10,14 +10,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'password']
+        fields = ['id', 'username', 'password', 'email']
 
 
 class UserListSerializer(ModelSerializer):
 
     class Meta:
             model = User
-            fields = ['id', 'first_name', 'last_name']
+            fields = ['id', 'first_name', 'last_name', 'email']
 
 
 class UserChoiceSerializer(ModelSerializer):
