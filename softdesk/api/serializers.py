@@ -87,9 +87,23 @@ class ContributorDetailSerializer(ModelSerializer):
         fields = ['user_id', 'project_id', 'permission', 'role']
 
 
+class ContributorSynthetic(ModelSerializer):
+
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Contributors
+        fields = ['user_id', 'username', 'permission', 'role']
+
+    def get_username(self, instance):
+
+        query = User.objects.get(id=instance.user_id.id)
+        fullname = query.first_name + "" + query.last_name
+
+        return fullname
+
+
 class ProjectListSerializer(ModelSerializer):
-
-
 
     class Meta:
         model = Project
@@ -100,16 +114,22 @@ class ProjectListSerializer(ModelSerializer):
 class ProjectDetailSerializer(ModelSerializer):
 
     issues_project = serializers.SerializerMethodField()
+    contrib_project = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
-        fields = ['id', 'title', 'description', 'type', 'auth_user_id', 'created_time', 'issues_project']
+        fields = ['id', 'title', 'description', 'type', 'auth_user_id',
+                  'created_time', 'contrib_project', 'issues_project']
 
     def get_issues_project(self, instance):
         queryset = instance.issues_project.all()
         serializer = IssueListSerializer(queryset, many=True)
         return serializer.data
 
+    def get_contrib_project(self, instance):
+        queryset = instance.contrib_project.all()
+        serializer = ContributorSynthetic(queryset, many=True)
+        return serializer.data
 
 class IssueListSerializer(ModelSerializer):
 
@@ -117,7 +137,7 @@ class IssueListSerializer(ModelSerializer):
         model = Issue
         fields = ['id', 'title', 'tag', 'priority', 'status',
                   'project_id', 'auth_user_id', 'assignee_user_id', 'created_time']
-        read_only_fields = ['project_id', 'auth_user_id']
+        read_only_fields = ['project_id', 'auth_user_id', 'assignee_user_id']
 
 
 class IssueDetailSerializer(ModelSerializer):

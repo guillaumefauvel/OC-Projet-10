@@ -33,7 +33,6 @@ project_router.register('([0-9]+)/users', ProjectUserView, basename='users-proje
 project_router.register('([0-9]+)/issues', ProjectIssueView, basename='issues-project')
 project_router.register('([0-9]+)/issues/([0-9]+)/comments', ProjectCommentView, basename='comment')
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', UserCreateAPIView.as_view(), name='signup'),

@@ -18,7 +18,7 @@ from .serializers import (
     ContributorDetailSerializer,
 )
 
-from login.permissions import IsOwnerOrReadOnly
+from login.permissions import IsOwner, IsContributor, IsSuperUser
 
 class ReadWriteSerializerMixin(object):
     """
@@ -77,6 +77,7 @@ class UserAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
+    permission_classes = [IsSuperUser]
 
     def get_queryset(self):
 
@@ -92,7 +93,8 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    permission_classes = [IsContributor]
+
 
     def get_queryset(self):
 
@@ -110,6 +112,7 @@ class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
+    permission_classes = [IsSuperUser]
 
     def get_queryset(self):
 
@@ -127,6 +130,7 @@ class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
+    permission_classes = [IsSuperUser]
 
     def get_queryset(self):
 
@@ -145,6 +149,7 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
     read_serializer_class = UserListSerializer
     write_serializer_class = UserChoiceSerializer
+    permission_classes = [IsOwner or IsContributor]
 
     def get_queryset(self):
 
@@ -168,6 +173,7 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
 
     serializer_class = ContributorDetailSerializer
     http_method_names = ['get', 'head', 'delete']
+    permission_classes = [IsContributor]
 
     def get_queryset(self):
 
@@ -206,6 +212,7 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
+    permission_classes = [IsOwner, IsContributor]
 
     def get_queryset(self):
 
@@ -229,6 +236,7 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
+    permission_classes = [IsOwner, IsContributor]
 
     def get_queryset(self):
 
