@@ -1,43 +1,43 @@
+from django.contrib.auth import get_user_model
 from rest_framework.reverse import reverse
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer, HyperlinkedIdentityField
 from rest_framework import serializers
+from django.contrib.auth.models import User
 
-from .models import User, Contributors, Project, Issue, Comment
-
-# from django.contrib.auth.models import User
+from .models import Contributors, Project, Issue, Comment
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'email']
+        fields = ['id', 'username', 'first_name', 'last_name', 'password', 'email']
 
 
 class UserListSerializer(ModelSerializer):
 
+
     class Meta:
-            model = User
-            fields = ['id', 'first_name', 'last_name', 'email']
+        model = Contributors
+        fields = ['id', 'user_id', 'permission', 'role']
+
 
 
 class UserChoiceSerializer(ModelSerializer):
 
-    USER_CHOICE = list((user.id, str(user.first_name)+str(user.last_name)) for user in User.objects.all())
+    USER_CHOICE = list((user, str(user.first_name)+str(user.last_name)) for user in User.objects.all())
 
     PERMISSION_CHOICES = (
         ('Author','Author'),
         ('Contributor','Contributor'),
     )
 
-    PROJECT_CHOICE = [(project.id, str(project)) for project in Project.objects.all()] # TODO - A changer pour être automatique
-
-    project_id = serializers.ChoiceField(choices=PROJECT_CHOICE)
     user_id = serializers.ChoiceField(choices=USER_CHOICE)
     permission = serializers.ChoiceField(choices=PERMISSION_CHOICES)
 
     class Meta:
         model = Contributors
         fields = ['user_id', 'permission', 'role', 'project_id']
+        read_only_fields = ['project_id']
 
 
 class UserDetailSerializer(ModelSerializer):
@@ -89,9 +89,12 @@ class ContributorDetailSerializer(ModelSerializer):
 
 class ProjectListSerializer(ModelSerializer):
 
+
+
     class Meta:
         model = Project
         fields = ['id', 'title','description', 'type', 'auth_user_id', 'created_time']
+        read_only_fields = ['auth_user_id']
 
 
 class ProjectDetailSerializer(ModelSerializer):
@@ -112,7 +115,9 @@ class IssueListSerializer(ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = ['id', 'title', 'tag', 'priority', 'status', 'project_id', 'auth_user_id', 'created_time']
+        fields = ['id', 'title', 'tag', 'priority', 'status',
+                  'project_id', 'auth_user_id', 'assignee_user_id', 'created_time']
+        read_only_fields = ['project_id', 'auth_user_id']
 
 
 class IssueDetailSerializer(ModelSerializer):
@@ -142,12 +147,13 @@ class CommentListSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'issue_id', 'description','author_user_id', 'created_time']
+        fields = ['id', 'issue_id', 'description','auth_user_id', 'created_time']
+        read_only_fields = ['auth_user_id', 'issue_id']
 
 
 class CommentDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'issue_id', 'description', 'author_user_id', 'created_time']
+        fields = ['id', 'issue_id', 'description', 'auth_user_id', 'created_time']
 

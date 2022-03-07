@@ -1,7 +1,10 @@
+from django.http import JsonResponse
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework import permissions
+from django.contrib.auth.models import User
 
-from .models import User, Contributors, Project, Issue, Comment
+from .models import Contributors, Project, Issue, Comment
 from .serializers import (
     UserListSerializer,
     UserDetailSerializer,
@@ -14,6 +17,8 @@ from .serializers import (
     UserChoiceSerializer,
     ContributorDetailSerializer,
 )
+
+from login.permissions import IsOwnerOrReadOnly
 
 class ReadWriteSerializerMixin(object):
     """
@@ -87,17 +92,20 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
 
         return Project.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(auth_user_id=self.request.user)
 
 
 class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Issue object representation, list and detailled view
     It return every Issue object.
-
     """
 
     serializer_class = IssueListSerializer
@@ -107,12 +115,14 @@ class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
 
         return Issue.objects.all()
 
+    def perform_create(self, serializer):
+        serializer.save(auth_user_id=self.request.user)
+
 
 class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Issue object representation, list and detailled view
     It return every Comment object.
-
     """
 
     serializer_class = CommentListSerializer
@@ -122,13 +132,15 @@ class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
 
         return Comment.objects.all()
 
+    def perform_create(self, serializer):
+        serializer.save(auth_user_id=self.request.user)
+
 
 class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
     """
     View that return a two different serializers ( READ, and WRITE wich offer the possibility to select
     a User in order to create a contribution relationship )
     It return every Contributor attached to the selected Project.
-
     """
 
     read_serializer_class = UserListSerializer
@@ -137,12 +149,14 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
     def get_queryset(self):
 
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-
         contributors = Contributors.objects.filter(project_id=self.project_id)
-        contributors_user = [User.objects.get(id=contrib.user_id) for contrib in contributors]
 
-        return contributors_user
+        return contributors
 
+    def perform_create(self, serializer):
+
+        project_ref = str(self.request).split("/")[3]
+        serializer.save(project_id=Project.objects.get(id=int(project_ref)))
 
 
 class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
@@ -158,11 +172,14 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
     def get_queryset(self):
 
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-        contributors = [contrib.user_id for contrib in Contributors.objects.filter(project_id=self.project_id)]
-        self.user_id = str(self.request).split("/")[5]
+        contributors = [contrib.id for contrib in Contributors.objects.filter(project_id=self.project_id)]
 
-        if int(self.user_id) in contributors:
-            contributor_user = Contributors.objects.filter(user_id=self.user_id).get(project_id=self.project_id)
+        self.contribution = str(self.request).split("/")[5]
+
+        if int(self.contribution) in contributors:
+
+            contributor_user = Contributors.objects.get(id=self.contribution)
+
             return [contributor_user]
 
         return [] # TODO Lever exception -> Utilisateur non contributeur ou Inexistant
@@ -171,10 +188,12 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
 
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
         contributors = Contributors.objects.filter(project_id=self.project_id)
-        contributors = [contrib.user_id for contrib in contributors]
-        self.user_id = str(self.request).split("/")[5]
 
-        contributor_user = Contributors.objects.filter(user_id=self.user_id).get(project_id=self.project_id)
+        contributors = [contrib.id for contrib in contributors]
+
+        self.contribution = str(self.request).split("/")[5]
+
+        contributor_user = Contributors.objects.get(id=self.contribution)
 
         return contributor_user
 
@@ -194,6 +213,12 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
         issues = Issue.objects.filter(project_id=self.project_id)
 
         return issues
+
+    def perform_create(self, serializer):
+
+        serializer.save(auth_user_id=self.request.user)
+        project_ref = ''.join([s for s in str(self.request) if s.isdigit()])
+        serializer.save(project_id=Project.objects.get(id=int(project_ref)))
 
 
 class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
@@ -217,3 +242,8 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
             return comments
 
         return []
+
+    def perform_create(self, serializer):
+        serializer.save(auth_user_id=self.request.user)
+        issue_ref = str(self.request).split("/")[5]
+        serializer.save(issue_id=Issue.objects.get(id=int(issue_ref)))
