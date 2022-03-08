@@ -17,6 +17,7 @@ from .serializers import (
     CommentDetailSerializer,
     UserChoiceSerializer,
     ContributorDetailSerializer,
+    ContributorsListSerializer,
 )
 
 from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission
@@ -75,7 +76,6 @@ class UserAPIView(MultipleSerializerMixin, ModelViewSet):
     It return every User object.
     """
 
-
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
     permission_classes = [UserPermission]
@@ -89,7 +89,6 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Project object representation, list and detailled view
     It return every Project object.
-
     """
 
     serializer_class = ProjectListSerializer
@@ -148,56 +147,42 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
     It return every Contributor attached to the selected Project.
     """
 
-    read_serializer_class = UserListSerializer
+    read_serializer_class = ContributorsListSerializer
     write_serializer_class = UserChoiceSerializer
     permission_classes = [IsOwnerList]
 
     def get_queryset(self):
 
-        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-        contributors = Contributors.objects.filter(project_id=self.project_id)
+        contributors = Contributors.objects.filter(project_id=self.args[0])
 
         return contributors
 
     def perform_create(self, serializer):
 
-        project_ref = str(self.request).split("/")[3]
-        serializer.save(project_id=Project.objects.get(id=int(project_ref)))
+        serializer.save(project_id=Project.objects.get(id=self.args[0]))
 
 
 class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
     """
     View that return the view of a contribution relation object.
     """
-
-    # TODO - Appliquer le principe DRY au possible
-
     serializer_class = ContributorDetailSerializer
     http_method_names = ['get', 'head', 'delete']
-    permission_classes = [UserPermission]
+    permission_classes = [IsOwnerList]
 
     def get_queryset(self):
 
-        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-        contributors = [contrib.id for contrib in Contributors.objects.filter(project_id=self.project_id)]
-        self.contribution = str(self.request).split("/")[5]
-
-        if int(self.contribution) in contributors:
-            contributor_user = Contributors.objects.get(id=self.contribution)
-
+        contributors = [contrib.id for contrib in Contributors.objects.filter(project_id=self.args[0])]
+        print(contributors)
+        if int(self.args[1]) in contributors:
+            contributor_user = Contributors.objects.get(id=self.args[1])
             return [contributor_user]
 
-        return [] # TODO Lever exception -> Utilisateur non contributeur ou Inexistant
+        return [] # TODO Exception
 
     def get_object(self):
 
-        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-        contributors = Contributors.objects.filter(project_id=self.project_id)
-        contributors = [contrib.id for contrib in contributors]
-
-        self.contribution = str(self.request).split("/")[5]
-
-        contributor_user = Contributors.objects.get(id=self.contribution)
+        contributor_user = Contributors.objects.get(id=self.args[1])
 
         return contributor_user
 
@@ -210,20 +195,21 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
-    permission_classes = [UserPermission]
+    permission_classes = [IsOwner|UserPermission]
 
     def get_queryset(self):
 
-        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-        issues = Issue.objects.filter(project_id=self.project_id)
+        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
+
+        issues = Issue.objects.filter(project_id=id_refs[0])
 
         return issues
 
     def perform_create(self, serializer):
 
+        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
         serializer.save(auth_user_id=self.request.user)
-        project_ref = ''.join([s for s in str(self.request) if s.isdigit()])
-        serializer.save(project_id=Project.objects.get(id=int(project_ref)))
+        serializer.save(project_id=Project.objects.get(id=id_refs[0]))
 
 
 class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
@@ -234,22 +220,22 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
-    permission_classes = [IsOwner, IsContributor]
+    permission_classes = [IsOwner|IsContributor]
 
     def get_queryset(self):
 
-        self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
-        issues = [issue.id for issue in Issue.objects.filter(project_id=self.project_id)]
+        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
+        issues = [issue.id for issue in Issue.objects.filter(project_id=id_refs[0])]
 
-        self.issue_id = str(self.request).split("/")[5]
-
-        if int(self.issue_id) in issues:
-            comments = Comment.objects.filter(issue_id=self.issue_id)
+        if int(id_refs[1]) in issues:
+            comments = Comment.objects.filter(issue_id=id_refs[1])
             return comments
 
         return []
 
     def perform_create(self, serializer):
+
+        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
+
         serializer.save(auth_user_id=self.request.user)
-        issue_ref = str(self.request).split("/")[5]
-        serializer.save(issue_id=Issue.objects.get(id=int(issue_ref)))
+        serializer.save(issue_id=Issue.objects.get(id=id_refs[1]))

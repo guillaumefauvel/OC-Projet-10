@@ -10,7 +10,7 @@ from api.views import (
     ProjectUserView,
     ProjectUserDetailView,
     ProjectIssueView,
-    ProjectCommentView
+    ProjectCommentView,
 )
 
 from login.views import (
@@ -27,7 +27,7 @@ router.register('comments', CommentAPIView, basename='comments')
 
 project_router = routers.SimpleRouter()
 
-project_router.register('([0-9]+)/users/<int:ref>', ProjectUserDetailView, basename='user-project') # TODO Changer REGEX
+project_router.register('([0-9]+)/users/([0-9]+)', ProjectUserDetailView, basename='user-project')
 project_router.register('([0-9]+)/users', ProjectUserView, basename='users-project')
 
 project_router.register('([0-9]+)/issues', ProjectIssueView, basename='issues-project')
@@ -42,4 +42,3 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/projects/', include(project_router.urls)),
 ]
-

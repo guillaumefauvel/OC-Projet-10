@@ -6,7 +6,8 @@ from django.contrib.auth.models import User
 
 from .models import Contributors, Project, Issue, Comment
 
-class UserSerializer(serializers.ModelSerializer):
+
+class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
@@ -15,6 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(ModelSerializer):
 
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
+
+
+class ContributorsListSerializer(ModelSerializer):
 
     class Meta:
         model = Contributors
@@ -130,6 +137,7 @@ class ProjectDetailSerializer(ModelSerializer):
         serializer = ContributorSynthetic(queryset, many=True)
         return serializer.data
 
+
 class IssueListSerializer(ModelSerializer):
 
     class Meta:
@@ -164,10 +172,11 @@ class IssueDetailSerializer(ModelSerializer):
 
 class CommentListSerializer(ModelSerializer):
 
+    url = serializers.HyperlinkedIdentityField(many=True, view_name='comment-detail', read_only=True)
+
     class Meta:
         model = Comment
-        fields = ['id', 'issue_id', 'description','auth_user_id', 'created_time']
-        read_only_fields = ['auth_user_id', 'issue_id']
+        fields = ['url', 'id', 'description']
 
 
 class CommentDetailSerializer(ModelSerializer):
@@ -175,4 +184,3 @@ class CommentDetailSerializer(ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'issue_id', 'description', 'auth_user_id', 'created_time']
-
