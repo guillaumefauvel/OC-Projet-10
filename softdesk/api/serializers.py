@@ -21,7 +21,6 @@ class UserListSerializer(ModelSerializer):
         fields = ['id', 'user_id', 'permission', 'role']
 
 
-
 class UserChoiceSerializer(ModelSerializer):
 
     USER_CHOICE = list((user, str(user.first_name)+str(user.last_name)) for user in User.objects.all())

@@ -1,4 +1,5 @@
-from django.http import JsonResponse
+from django.core.serializers import serialize
+from django.http import JsonResponse, HttpResponse
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import permissions
@@ -18,7 +19,7 @@ from .serializers import (
     ContributorDetailSerializer,
 )
 
-from login.permissions import IsOwner, IsContributor, IsSuperUser
+from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission
 
 class ReadWriteSerializerMixin(object):
     """
@@ -77,7 +78,7 @@ class UserAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
-    permission_classes = [IsSuperUser]
+    permission_classes = [UserPermission]
 
     def get_queryset(self):
 
@@ -93,7 +94,7 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
-    permission_classes = [IsContributor]
+    permission_classes = [IsOwner|UserPermission]
 
 
     def get_queryset(self):
@@ -149,7 +150,7 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
     read_serializer_class = UserListSerializer
     write_serializer_class = UserChoiceSerializer
-    permission_classes = [IsOwner or IsContributor]
+    permission_classes = [IsOwnerList]
 
     def get_queryset(self):
 
@@ -173,17 +174,15 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
 
     serializer_class = ContributorDetailSerializer
     http_method_names = ['get', 'head', 'delete']
-    permission_classes = [IsContributor]
+    permission_classes = [UserPermission]
 
     def get_queryset(self):
 
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
         contributors = [contrib.id for contrib in Contributors.objects.filter(project_id=self.project_id)]
-
         self.contribution = str(self.request).split("/")[5]
 
         if int(self.contribution) in contributors:
-
             contributor_user = Contributors.objects.get(id=self.contribution)
 
             return [contributor_user]
@@ -194,7 +193,6 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
 
         self.project_id = str(self.request).split("/")[3]  # TODO - à améliorer
         contributors = Contributors.objects.filter(project_id=self.project_id)
-
         contributors = [contrib.id for contrib in contributors]
 
         self.contribution = str(self.request).split("/")[5]
@@ -212,7 +210,7 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
-    permission_classes = [IsOwner, IsContributor]
+    permission_classes = [UserPermission]
 
     def get_queryset(self):
 
