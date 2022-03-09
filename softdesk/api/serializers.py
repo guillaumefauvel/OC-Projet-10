@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 
 from .models import Contributors, Project, Issue, Comment
 
-
 class UserSerializer(ModelSerializer):
 
     class Meta:
@@ -30,14 +29,12 @@ class ContributorsListSerializer(ModelSerializer):
 
 class UserChoiceSerializer(ModelSerializer):
 
-    USER_CHOICE = list((user, str(user.first_name)+str(user.last_name)) for user in User.objects.all())
-
     PERMISSION_CHOICES = (
         ('Author','Author'),
         ('Contributor','Contributor'),
     )
 
-    user_id = serializers.ChoiceField(choices=USER_CHOICE)
+    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     permission = serializers.ChoiceField(choices=PERMISSION_CHOICES)
 
     class Meta:
@@ -172,15 +169,17 @@ class IssueDetailSerializer(ModelSerializer):
 
 class CommentListSerializer(ModelSerializer):
 
-    url = serializers.HyperlinkedIdentityField(many=True, view_name='comment-detail', read_only=True)
+    # url = serializers.HyperlinkedIdentityField(many=True, view_name='comment-detail', read_only=True)
 
     class Meta:
         model = Comment
-        fields = ['url', 'id', 'description']
+        fields = ['id', 'description']
 
 
 class CommentDetailSerializer(ModelSerializer):
 
+    # url = serializers.HyperlinkedIdentityField(view_name='api:comment', lookup_field='id')
+
     class Meta:
         model = Comment
-        fields = ['id', 'issue_id', 'description', 'auth_user_id', 'created_time']
+        fields = ['id']

@@ -227,6 +227,8 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
         issues = [issue.id for issue in Issue.objects.filter(project_id=id_refs[0])]
 
+        url = self.request
+        print(url)
         if int(id_refs[1]) in issues:
             comments = Comment.objects.filter(issue_id=id_refs[1])
             return comments
