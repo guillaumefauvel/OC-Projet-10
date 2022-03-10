@@ -5,13 +5,12 @@ from django.db.models import Q
 from rest_framework.serializers import (
     CharField,
     EmailField,
-    HyperlinkedModelSerializer,
     ModelSerializer,
-    SerializerMethodField,
     ValidationError,
 )
 
-User = get_user_model()
+from django.conf import settings
+User = settings.AUTH_USER_MODEL
 
 class UserCreateSerializer(ModelSerializer):
 
@@ -21,9 +20,12 @@ class UserCreateSerializer(ModelSerializer):
         model = User
         fields = [
             'username',
+            'first_name',
+            'last_name',
             'password',
             'email',
             'email_2',
+
         ]
         extra_kwargs = {
             'password':{'write_only': True}
@@ -49,9 +51,13 @@ class UserCreateSerializer(ModelSerializer):
         username = validated_data['username']
         email = validated_data['email']
         password = validated_data['password']
+        first_name = validated_data['first_name']
+        last_name = validated_data['last_name']
         user_obj = User(
             username = username,
             email = email,
+            first_name = first_name,
+            last_name = last_name
         )
         user_obj.set_password(password)
         user_obj.save()

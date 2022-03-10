@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 
+
+
 from rest_framework.generics import (
     CreateAPIView,
     ListAPIView,
@@ -16,20 +18,21 @@ from rest_framework.generics import (
 )
 
 from rest_framework.views import APIView
-from django.contrib.auth import login
 
 from .serializers import (
     UserCreateSerializer,
     UserLoginSerializer
 )
 
-User = get_user_model()
+# User = get_user_model()
 
+from login.models import User
 
 class UserCreateAPIView(CreateAPIView):
 
     serializer_class = UserCreateSerializer
     queryset = User.objects.all()
+
 
 class UserLoginAPIView(APIView):
 
@@ -42,4 +45,3 @@ class UserLoginAPIView(APIView):
             new_data = serializer.data
             return Response(new_data, status=HTTP_200_OK)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-

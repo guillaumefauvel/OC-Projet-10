@@ -51,7 +51,7 @@ class IsContributor(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
-        project_id = str(request).split("/")[3]
+        project_id = [v for v in str(request).split('/') if v.isnumeric()][0]
 
         if not project_id.isalnum():
             return True
@@ -66,10 +66,12 @@ class UserPermission(permissions.BasePermission):
     message = 'You should be a contributor in order to access this ressources'
 
     def has_permission(self, request, view):
+
         if not request.user.is_authenticated:
             return False
 
-        project_id = str(request).split("/")[3]
+        project_id = [v for v in str(request).split('/') if v.isnumeric()][0]
+
         if not project_id.isalnum():
             return True
         contributors_ids = [contrib.user_id.id for contrib in Contributors.objects.filter(project_id=project_id)]
@@ -81,7 +83,6 @@ class UserPermission(permissions.BasePermission):
         elif view.action in ['retrieve']:
             return int(str(request.user.id)) in contributors_ids
         elif view.action in [ 'update', 'partial_update', 'destroy']:
-            # return request.user == Project.objects.get(id=project_id).auth_user_id
             return True
         else:
             return False
@@ -96,20 +97,18 @@ class UserPermission(permissions.BasePermission):
         except:
             project_ref = obj.project_id.auth_user_id
 
-        project_id = str(request).split("/")[3]
+        project_id = [v for v in str(request).split('/') if v.isnumeric()][0]
+
         if not project_id.isalnum():
             return True
         contributors_ids = [contrib.user_id.id for contrib in Contributors.objects.filter(project_id=project_id)]
 
         if view.action == 'retrieve':
             return int(str(request.user.id)) in contributors_ids
-
         elif view.action in ['update', 'partial_update']:
             return project_ref == request.user
-
         elif view.action == 'destroy':
             return project_ref == request.user
-
         else:
             return False
 

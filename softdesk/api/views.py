@@ -2,8 +2,8 @@ from django.core.serializers import serialize
 from django.http import JsonResponse, HttpResponse
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import permissions
-from django.contrib.auth.models import User
+
+from django.conf import settings
 
 from .models import Contributors, Project, Issue, Comment
 from .serializers import (
@@ -21,6 +21,8 @@ from .serializers import (
 )
 
 from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission
+
+User = settings.AUTH_USER_MODEL
 
 class ReadWriteSerializerMixin(object):
     """
@@ -220,15 +222,13 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
-    permission_classes = [IsOwner|IsContributor]
+    permission_classes = [IsOwner|UserPermission]
 
     def get_queryset(self):
 
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
         issues = [issue.id for issue in Issue.objects.filter(project_id=id_refs[0])]
 
-        url = self.request
-        print(url)
         if int(id_refs[1]) in issues:
             comments = Comment.objects.filter(issue_id=id_refs[1])
             return comments

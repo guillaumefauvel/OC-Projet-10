@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework.reverse import reverse
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer, HyperlinkedIdentityField
 from rest_framework import serializers
-from django.contrib.auth.models import User
+
+from login.models import User
 
 from .models import Contributors, Project, Issue, Comment
 
@@ -166,20 +167,15 @@ class IssueDetailSerializer(ModelSerializer):
         serializer = CommentListSerializer(queryset, many=True, context={'request': self.instance}) # TODO
         return serializer.data
 
-
 class CommentListSerializer(ModelSerializer):
-
-    # url = serializers.HyperlinkedIdentityField(many=True, view_name='comment-detail', read_only=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'description']
-
+        fields = ['id', 'auth_user_id', 'created_time', 'description']
+        read_only_fields = ['auth_user_id']
 
 class CommentDetailSerializer(ModelSerializer):
 
-    # url = serializers.HyperlinkedIdentityField(view_name='api:comment', lookup_field='id')
-
     class Meta:
         model = Comment
-        fields = ['id']
+        fields = ['id', 'issue_id', 'auth_user_id', 'created_time', 'description']
