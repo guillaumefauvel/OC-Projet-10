@@ -16,7 +16,13 @@ from api.views import (
 from login.views import (
     UserCreateAPIView,
     UserLoginAPIView,
+    LoginView,
+    UserView,
 )
+
+from django.contrib.auth import views
+
+from login.views import CustomLoginView
 
 router = routers.SimpleRouter()
 
@@ -37,8 +43,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', UserCreateAPIView.as_view(), name='signup'),
     path('login/', UserLoginAPIView.as_view(), name='login'),
+    path('loginn/', LoginView.as_view(), name='loginn'),
+    path('userss/', UserView.as_view(), name='userss'),
+    path('loginnn/', CustomLoginView.as_view()),
 
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
-    path('api/projects/', include(project_router.urls)),
+    path('api/projects/', include(project_router.urls), name='project'),
 ]

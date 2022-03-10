@@ -79,6 +79,7 @@ class UserLoginSerializer(ModelSerializer):
             'password',
             'token',
         ]
+
         extra_kwargs = {'password':
                             {'write_only': True}
                         }
@@ -88,6 +89,7 @@ class UserLoginSerializer(ModelSerializer):
         email = data.get('email', None)
         username = data.get('username', None)
         password = data['password']
+
         if not email and not username:
             raise ValidationError('A username or an email is required to login')
 

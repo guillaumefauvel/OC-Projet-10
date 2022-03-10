@@ -1,11 +1,15 @@
-from django.core.serializers import serialize
-from django.http import JsonResponse, HttpResponse
+import jwt
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 
 from django.conf import settings
 
 from .models import Contributors, Project, Issue, Comment
+from login.models import User
+
 from .serializers import (
     UserListSerializer,
     UserDetailSerializer,
@@ -22,7 +26,25 @@ from .serializers import (
 
 from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission
 
-User = settings.AUTH_USER_MODEL
+# User = settings.AUTH_USER_MODEL
+
+def checker(request):
+
+    token = request.COOKIES.get('jwt')
+
+    if not token:
+        raise AuthenticationFailed('Unauthenticated')
+
+    try:
+        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed('Unauthenticated')
+    user = User.objects.filter(id=payload['id']).first()
+
+    if not user.id == request.user.id:
+        raise AuthenticationFailed('Unauthenticated')
+
+    return
 
 class ReadWriteSerializerMixin(object):
     """
@@ -97,8 +119,9 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
     detail_serializer_class = ProjectDetailSerializer
     permission_classes = [IsOwner|UserPermission]
 
-
     def get_queryset(self):
+
+        # checker(self.request)
 
         return Project.objects.all()
 
@@ -115,6 +138,7 @@ class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
     permission_classes = [IsSuperUser]
+
 
     def get_queryset(self):
 
@@ -224,7 +248,11 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
     detail_serializer_class = CommentDetailSerializer
     permission_classes = [IsOwner|UserPermission]
 
+
+
     def get_queryset(self):
+
+        checker(self.request)
 
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
         issues = [issue.id for issue in Issue.objects.filter(project_id=id_refs[0])]
