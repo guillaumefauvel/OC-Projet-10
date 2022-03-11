@@ -101,14 +101,15 @@ class UserPermission(permissions.BasePermission):
 
         if not project_id.isalnum():
             return True
+
         contributors_ids = [contrib.user_id.id for contrib in Contributors.objects.filter(project_id=project_id)]
+        moderators_ids = [contrib.user_id.id for contrib in Contributors.objects.filter(project_id=project_id)
+                          if contrib.permission == 'Moderator']
 
         if view.action == 'retrieve':
             return int(str(request.user.id)) in contributors_ids
-        elif view.action in ['update', 'partial_update']:
-            return project_ref == request.user
-        elif view.action == 'destroy':
-            return project_ref == request.user
+        elif view.action in ['update', 'partial_update', 'destroy']:
+            return (project_ref == request.user) or (request.user.id in moderators_ids)
         else:
             return False
 

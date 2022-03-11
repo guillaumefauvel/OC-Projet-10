@@ -31,7 +31,7 @@ class ContributorsListSerializer(ModelSerializer):
 class UserChoiceSerializer(ModelSerializer):
 
     PERMISSION_CHOICES = (
-        ('Author','Author'),
+        ('Moderator','Moderator'),
         ('Contributor','Contributor'),
     )
 

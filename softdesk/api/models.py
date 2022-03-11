@@ -5,18 +5,17 @@ from django.conf import settings
 class Contributors(models.Model):
 
     PERMISSION_CHOICES = (
-        ('Author','Author'),
+        ('Moderator','Moderator'),
         ('Contributor','Contributor'),
     )
 
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='contribution')
     project_id = models.ForeignKey('Project', null=True, on_delete=models.CASCADE, related_name='contrib_project')
-    permission = models.CharField(choices=PERMISSION_CHOICES, max_length=32) # TODO Plus technique
+    permission = models.CharField(choices=PERMISSION_CHOICES, max_length=32)
     role = models.CharField(max_length=32)
 
     def __str__(self):
         rep = f'Contributors({self.user_id}, {self.project_id}, {self.permission}, {self.role})'
-
         return rep
 
 
