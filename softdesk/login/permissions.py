@@ -91,7 +91,6 @@ class UserPermission(permissions.BasePermission):
 
         if not request.user.is_authenticated:
             return False
-
         try:
             project_ref = obj.auth_user_id
         except:
@@ -108,8 +107,10 @@ class UserPermission(permissions.BasePermission):
 
         if view.action == 'retrieve':
             return int(str(request.user.id)) in contributors_ids
-        elif view.action in ['update', 'partial_update', 'destroy']:
+        elif view.action in ['update', 'partial_update']:
             return (project_ref == request.user) or (request.user.id in moderators_ids)
+        elif view.action in ['destroy']:
+            return project_ref == request.user
         else:
             return False
 

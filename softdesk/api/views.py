@@ -1,3 +1,5 @@
+import datetime
+
 import jwt
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -25,26 +27,7 @@ from .serializers import (
 )
 
 from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission
-
-# User = settings.AUTH_USER_MODEL
-
-def checker(request):
-
-    token = request.COOKIES.get('jwt')
-
-    if not token:
-        raise AuthenticationFailed('Unauthenticated')
-
-    try:
-        payload = jwt.decode(token, 'secret', algorithms='HS256')
-    except jwt.ExpiredSignatureError:
-        raise AuthenticationFailed('Unauthenticated')
-    user = User.objects.filter(id=payload['id']).first()
-
-    if not user.id == request.user.id:
-        raise AuthenticationFailed('Unauthenticated')
-
-    return
+from login.views import token_check_and_update
 
 class ReadWriteSerializerMixin(object):
     """
@@ -106,6 +89,8 @@ class UserAPIView(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
 
+        token_check_and_update(self.request)
+
         return User.objects.all()
 
 
@@ -121,7 +106,7 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
 
-        # checker(self.request)
+        token_check_and_update(self.request)
 
         return Project.objects.all()
 
@@ -139,8 +124,9 @@ class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
     detail_serializer_class = IssueDetailSerializer
     permission_classes = [IsSuperUser]
 
-
     def get_queryset(self):
+
+        token_check_and_update(self.request)
 
         return Issue.objects.all()
 
@@ -159,6 +145,8 @@ class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [IsSuperUser]
 
     def get_queryset(self):
+
+        token_check_and_update(self.request)
 
         return Comment.objects.all()
 
@@ -179,7 +167,7 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
 
-        checker(self.request)
+        token_check_and_update(self.request)
 
         contributors = Contributors.objects.filter(project_id=self.args[0])
 
@@ -200,8 +188,10 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
 
     def get_queryset(self):
 
+        token_check_and_update(self.request)
+
         contributors = [contrib.id for contrib in Contributors.objects.filter(project_id=self.args[0])]
-        print(contributors)
+
         if int(self.args[1]) in contributors:
             contributor_user = Contributors.objects.get(id=self.args[1])
             return [contributor_user]
@@ -227,6 +217,8 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
 
+        token_check_and_update(self.request)
+
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
 
         issues = Issue.objects.filter(project_id=id_refs[0])
@@ -250,11 +242,9 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
     detail_serializer_class = CommentDetailSerializer
     permission_classes = [IsOwner|UserPermission]
 
-
-
     def get_queryset(self):
 
-        checker(self.request)
+        token_check_and_update(self.request)
 
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
         issues = [issue.id for issue in Issue.objects.filter(project_id=id_refs[0])]
