@@ -36,7 +36,7 @@ def checker(request):
         raise AuthenticationFailed('Unauthenticated')
 
     try:
-        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        payload = jwt.decode(token, 'secret', algorithms='HS256')
     except jwt.ExpiredSignatureError:
         raise AuthenticationFailed('Unauthenticated')
     user = User.objects.filter(id=payload['id']).first()
@@ -178,6 +178,8 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
     permission_classes = [IsOwnerList]
 
     def get_queryset(self):
+
+        checker(self.request)
 
         contributors = Contributors.objects.filter(project_id=self.args[0])
 

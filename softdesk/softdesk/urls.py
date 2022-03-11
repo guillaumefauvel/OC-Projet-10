@@ -15,14 +15,9 @@ from api.views import (
 
 from login.views import (
     UserCreateAPIView,
-    UserLoginAPIView,
-    LoginView,
-    UserView,
+    CustomLoginView,
+    LogoutView,
 )
-
-from django.contrib.auth import views
-
-from login.views import CustomLoginView
 
 router = routers.SimpleRouter()
 
@@ -42,10 +37,8 @@ project_router.register('([0-9]+)/issues/([0-9]+)/comments', ProjectCommentView,
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', UserCreateAPIView.as_view(), name='signup'),
-    path('login/', UserLoginAPIView.as_view(), name='login'),
-    path('loginn/', LoginView.as_view(), name='loginn'),
-    path('userss/', UserView.as_view(), name='userss'),
-    path('loginnn/', CustomLoginView.as_view()),
+    path('login/', CustomLoginView.as_view()),
+    path('logout/', LogoutView.as_view()),
 
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
