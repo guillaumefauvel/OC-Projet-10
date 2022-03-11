@@ -1,5 +1,7 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions
 from api.models import Contributors, Project
+from api.exceptions import ProjectExeption
 
 
 class IsSuperUser(permissions.BasePermission):
@@ -8,7 +10,6 @@ class IsSuperUser(permissions.BasePermission):
     def has_permission(self, request, view):
 
         return request.user.is_superuser
-
 
 class IsOwnerList(permissions.BasePermission):
     """ Give permission to Read a list of object if a user is the author of it """
@@ -20,7 +21,11 @@ class IsOwnerList(permissions.BasePermission):
             return False
 
         project_id = str(request).split("/")[3]
-        project_ref = Project.objects.get(id=project_id)
+
+        try:
+            project_ref = Project.objects.get(id=project_id)
+        except ObjectDoesNotExist:
+            raise ProjectExeption()
 
         return project_ref.auth_user_id == request.user
 

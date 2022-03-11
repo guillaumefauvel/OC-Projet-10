@@ -1,14 +1,16 @@
 import datetime
 
 import jwt
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, NotFound
 
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 
 from django.conf import settings
 
+from .exceptions import ProjectExeption
 from .models import Contributors, Project, Issue, Comment
 from login.models import User
 
@@ -21,9 +23,9 @@ from .serializers import (
     IssueDetailSerializer,
     CommentListSerializer,
     CommentDetailSerializer,
-    UserChoiceSerializer,
-    ContributorDetailSerializer,
-    ContributorsListSerializer,
+    ContributionFormCreator,
+    AdminCommentDetailSerializer,
+    ContributorSynthetic,
 )
 
 from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission
@@ -85,7 +87,8 @@ class UserAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
-    permission_classes = [UserPermission]
+    permission_classes = [IsSuperUser]
+    http_method_names = ['get', 'head', 'delete']
 
     def get_queryset(self):
 
@@ -114,6 +117,7 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
         serializer.save(auth_user_id=self.request.user)
 
 
+
 class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Issue object representation, list and detailled view
@@ -140,9 +144,9 @@ class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
     It return every Comment object.
     """
 
-    serializer_class = CommentListSerializer
-    detail_serializer_class = CommentDetailSerializer
+    serializer_class = AdminCommentDetailSerializer
     permission_classes = [IsSuperUser]
+    http_method_names = ['get', 'head', 'delete']
 
     def get_queryset(self):
 
@@ -161,16 +165,19 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
     It return every Contributor attached to the selected Project.
     """
 
-    read_serializer_class = ContributorsListSerializer
-    write_serializer_class = UserChoiceSerializer
+    read_serializer_class = ContributorSynthetic
+    write_serializer_class = ContributionFormCreator
     permission_classes = [IsOwnerList]
 
     def get_queryset(self):
 
         token_check_and_update(self.request)
-
-        contributors = Contributors.objects.filter(project_id=self.args[0])
-
+        try:
+            contributors = Contributors.objects.filter(project_id=self.args[0])
+        except Exception as e:
+            raise NotFound()
+        if not contributors:
+            raise NotFound()
         return contributors
 
     def perform_create(self, serializer):
@@ -182,7 +189,7 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
     """
     View that return the view of a contribution relation object.
     """
-    serializer_class = ContributorDetailSerializer
+    serializer_class = ContributorSynthetic
     http_method_names = ['get', 'head', 'delete']
     permission_classes = [IsOwnerList]
 
@@ -191,12 +198,11 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
         token_check_and_update(self.request)
 
         contributors = [contrib.id for contrib in Contributors.objects.filter(project_id=self.args[0])]
-
-        if int(self.args[1]) in contributors:
+        try:
             contributor_user = Contributors.objects.get(id=self.args[1])
             return [contributor_user]
-
-        return [] # TODO Exception
+        except:
+            raise NotFound()
 
     def get_object(self):
 
@@ -223,6 +229,12 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
 
         issues = Issue.objects.filter(project_id=id_refs[0])
 
+        if not issues:
+            try:
+                Project.objects.get(id=id_refs[0])
+                raise NotFound()
+            except ObjectDoesNotExist:
+                raise ProjectExeption
         return issues
 
     def perform_create(self, serializer):
@@ -252,8 +264,12 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
         if int(id_refs[1]) in issues:
             comments = Comment.objects.filter(issue_id=id_refs[1])
             return comments
+        try:
+            Project.objects.get(id=id_refs[0])
+            raise NotFound()
+        except ObjectDoesNotExist:
+            raise ProjectExeption
 
-        return []
 
     def perform_create(self, serializer):
 

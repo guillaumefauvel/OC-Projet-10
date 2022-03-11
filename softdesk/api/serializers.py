@@ -21,29 +21,6 @@ class UserListSerializer(ModelSerializer):
         fields = ['id', 'username', 'email']
 
 
-class ContributorsListSerializer(ModelSerializer):
-
-    class Meta:
-        model = Contributors
-        fields = ['id', 'user_id', 'permission', 'role']
-
-
-class UserChoiceSerializer(ModelSerializer):
-
-    PERMISSION_CHOICES = (
-        ('Moderator','Moderator'),
-        ('Contributor','Contributor'),
-    )
-
-    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    permission = serializers.ChoiceField(choices=PERMISSION_CHOICES)
-
-    class Meta:
-        model = Contributors
-        fields = ['user_id', 'permission', 'role', 'project_id']
-        read_only_fields = ['project_id']
-
-
 class UserDetailSerializer(ModelSerializer):
 
     projects = serializers.SerializerMethodField()
@@ -58,37 +35,20 @@ class UserDetailSerializer(ModelSerializer):
         return serializer.data
 
 
-class ProjectUserDetailSerializer(ModelSerializer):
+class ContributionFormCreator(ModelSerializer):
 
-    issue_comments = serializers.SerializerMethodField()
+    PERMISSION_CHOICES = (
+        ('Moderator','Moderator'),
+        ('Contributor','Contributor'),
+    )
 
-    class Meta:
-        model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'issue_comments']
-
-    def get_issue_comments(self, instance):
-
-        project = str(self.context['request']).split()[2].split('/')[3] # TODO A changer
-        issues = Issue.objects.filter(auth_user_id=instance.id)
-        issues = [issue for issue in issues if issue.project_id.id == int(project)]
-
-        serializer = IssueListSerializer(issues, many=True)
-
-        return serializer.data
-
-
-class ContributorListSerializer(ModelSerializer):
+    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    permission = serializers.ChoiceField(choices=PERMISSION_CHOICES)
 
     class Meta:
         model = Contributors
-        fields = ['user_id', 'project_id', 'permission']
-
-
-class ContributorDetailSerializer(ModelSerializer):
-
-    class Meta:
-        model = Contributors
-        fields = ['user_id', 'project_id', 'permission', 'role']
+        fields = ['user_id', 'permission', 'role', 'project_id']
+        read_only_fields = ['project_id']
 
 
 class ContributorSynthetic(ModelSerializer):
@@ -167,6 +127,7 @@ class IssueDetailSerializer(ModelSerializer):
         serializer = CommentListSerializer(queryset, many=True, context={'request': self.instance}) # TODO
         return serializer.data
 
+
 class CommentListSerializer(ModelSerializer):
 
     class Meta:
@@ -174,8 +135,22 @@ class CommentListSerializer(ModelSerializer):
         fields = ['id', 'auth_user_id', 'created_time', 'description']
         read_only_fields = ['auth_user_id']
 
+
 class CommentDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
         fields = ['id', 'issue_id', 'auth_user_id', 'created_time', 'description']
+
+
+class AdminCommentDetailSerializer(ModelSerializer):
+
+    project_id = serializers.SerializerMethodField('get_project_id')
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'project_id', 'issue_id', 'auth_user_id', 'created_time', 'description']
+
+    def get_project_id(self, obj):
+
+        return obj.issue_id.project_id.id
