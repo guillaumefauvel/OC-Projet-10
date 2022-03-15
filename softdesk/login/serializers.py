@@ -10,7 +10,7 @@ from rest_framework.serializers import (
 )
 
 from django.conf import settings
-User = settings.AUTH_USER_MODEL
+from .models import User
 
 class UserCreateSerializer(ModelSerializer):
 

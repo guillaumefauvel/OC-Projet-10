@@ -1,11 +1,9 @@
-from django.contrib.auth import get_user_model
-from rest_framework.reverse import reverse
-from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer, HyperlinkedIdentityField
+from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 
 from login.models import User
-
 from .models import Contributors, Project, Issue, Comment
+
 
 class UserSerializer(ModelSerializer):
 
@@ -57,7 +55,7 @@ class ContributorSynthetic(ModelSerializer):
 
     class Meta:
         model = Contributors
-        fields = ['user_id', 'username', 'permission', 'role']
+        fields = ['id', 'user_id', 'username', 'permission', 'role']
 
     def get_username(self, instance):
 

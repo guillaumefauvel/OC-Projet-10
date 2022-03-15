@@ -17,8 +17,7 @@ from login.models import User
 class UserCreateAPIView(CreateAPIView):
 
     serializer_class = UserCreateSerializer
-    queryset = User.objects.all()
-
+    # queryset = User.objects.all()
 
 class LogoutView(APIView):
 

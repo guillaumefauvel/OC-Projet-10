@@ -1,14 +1,8 @@
-import datetime
-
-import jwt
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.exceptions import AuthenticationFailed, NotFound
+from rest_framework.exceptions import NotFound
 
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
-
-from django.conf import settings
 
 from .exceptions import ProjectExeption
 from .models import Contributors, Project, Issue, Comment
@@ -269,7 +263,6 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
             raise NotFound()
         except ObjectDoesNotExist:
             raise ProjectExeption
-
 
     def perform_create(self, serializer):
 

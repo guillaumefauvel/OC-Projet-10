@@ -21,7 +21,6 @@ class IsOwnerList(permissions.BasePermission):
             return False
 
         project_id = str(request).split("/")[3]
-
         try:
             project_ref = Project.objects.get(id=project_id)
         except ObjectDoesNotExist:
@@ -67,7 +66,12 @@ class IsContributor(permissions.BasePermission):
 
 
 class UserPermission(permissions.BasePermission):
-
+    """
+    Give the permission to the listview if the authenticated user is in the contributors list of a given project.
+    The user with a Contributor status can access the detailled view item of any given item.
+    If the user is a Moderator he can update a specific item but cannot delete it.
+    In order to delete an item the user should be the author of it.
+    """
     message = 'You should be a contributor in order to access this ressources'
 
     def has_permission(self, request, view):
@@ -85,7 +89,7 @@ class UserPermission(permissions.BasePermission):
             return int(str(request.user.id)) in contributors_ids
         elif view.action == 'create':
             return int(str(request.user.id)) in contributors_ids
-        elif view.action in ['retrieve']:
+        elif view.action == 'retrieve':
             return int(str(request.user.id)) in contributors_ids
         elif view.action in [ 'update', 'partial_update', 'destroy']:
             return True
@@ -114,7 +118,7 @@ class UserPermission(permissions.BasePermission):
             return int(str(request.user.id)) in contributors_ids
         elif view.action in ['update', 'partial_update']:
             return (project_ref == request.user) or (request.user.id in moderators_ids)
-        elif view.action in ['destroy']:
+        elif view.action == 'destroy':
             return project_ref == request.user
         else:
             return False
