@@ -73,7 +73,7 @@ class MultipleSerializerMixin:
         return super().get_serializer_class()
 
 
-@permission_classes([IsSuperUser])
+@permission_classes([IsSuperUser, ValidToken])
 class UserAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a User object representation, list and detailled view.
@@ -105,6 +105,12 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(auth_user_id=self.request.user)
+        Contributors.objects.create(
+            user_id=self.request.user,
+            project_id=Project.objects.latest(),
+            permission='Contributor',
+            role='Author'
+        )
 
 
 @permission_classes([IsSuperUser, ValidToken])
@@ -174,7 +180,7 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
     View that return the view of a contribution relation object.
     """
     serializer_class = ContributorSynthetic
-    http_method_names = ['get', 'head', 'delete']
+    http_method_names = ['get', 'head', 'delete', 'put']
 
     def get_queryset(self):
 

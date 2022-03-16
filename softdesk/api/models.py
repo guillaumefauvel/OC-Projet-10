@@ -37,6 +37,9 @@ class Project(models.Model):
         return self.title
 
 
+    class Meta:
+        get_latest_by = ['id']
+
 class Issue(models.Model):
 
     TAG_LIST = (

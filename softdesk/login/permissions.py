@@ -14,7 +14,10 @@ class ValidToken(permissions.BasePermission):
         regex = re.compile('^HTTP_')
         header_infos = dict((regex.sub('', header), value) for (header, value)
              in request.META.items() if header.startswith('HTTP_'))
-        token = header_infos['AUTHORIZATION'].split()[1]
+        try:
+            token = header_infos['AUTHORIZATION'].split()[1]
+        except KeyError:
+            return False
 
         return Token.objects.get(user=request.user) == Token.objects.get(key=token)
 
@@ -25,6 +28,7 @@ class IsSuperUser(permissions.BasePermission):
     def has_permission(self, request, view):
 
         return request.user.is_superuser
+
 
 class IsOwnerList(permissions.BasePermission):
     """ Give permission to Read a list of object if a user is the author of it """
