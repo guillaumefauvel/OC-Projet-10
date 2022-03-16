@@ -2,6 +2,21 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions
 from api.models import Contributors, Project
 from api.exceptions import ProjectExeption
+from rest_framework.authtoken.models import Token
+import re
+
+
+class ValidToken(permissions.BasePermission):
+    """ Check if the token correspond to auth user """
+
+    def has_permission(self, request, view):
+
+        regex = re.compile('^HTTP_')
+        header_infos = dict((regex.sub('', header), value) for (header, value)
+             in request.META.items() if header.startswith('HTTP_'))
+        token = header_infos['AUTHORIZATION'].split()[1]
+
+        return Token.objects.get(user=request.user) == Token.objects.get(key=token)
 
 
 class IsSuperUser(permissions.BasePermission):

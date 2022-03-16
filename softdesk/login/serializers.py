@@ -1,5 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth import get_user_model
 from django.db.models import Q
 
 from rest_framework.serializers import (
@@ -9,7 +7,6 @@ from rest_framework.serializers import (
     ValidationError,
 )
 
-from django.conf import settings
 from .models import User
 
 class UserCreateSerializer(ModelSerializer):

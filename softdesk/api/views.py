@@ -3,6 +3,7 @@ from rest_framework.exceptions import NotFound
 
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import permission_classes
 
 from .exceptions import ProjectExeption
 from .models import Contributors, Project, Issue, Comment
@@ -22,8 +23,7 @@ from .serializers import (
     ContributorSynthetic,
 )
 
-from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission
-from login.views import token_check_and_update
+from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission, ValidToken
 
 class ReadWriteSerializerMixin(object):
     """
@@ -73,6 +73,7 @@ class MultipleSerializerMixin:
         return super().get_serializer_class()
 
 
+@permission_classes([IsSuperUser])
 class UserAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a User object representation, list and detailled view.
@@ -81,16 +82,14 @@ class UserAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
-    permission_classes = [IsSuperUser]
     http_method_names = ['get', 'head', 'delete']
 
     def get_queryset(self):
 
-        token_check_and_update(self.request)
-
         return User.objects.all()
 
 
+@permission_classes([IsOwner|UserPermission, ValidToken])
 class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Project object representation, list and detailled view
@@ -99,11 +98,8 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
-    permission_classes = [IsOwner|UserPermission]
 
     def get_queryset(self):
-
-        token_check_and_update(self.request)
 
         return Project.objects.all()
 
@@ -111,7 +107,7 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
         serializer.save(auth_user_id=self.request.user)
 
 
-
+@permission_classes([IsSuperUser, ValidToken])
 class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Issue object representation, list and detailled view
@@ -120,11 +116,8 @@ class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
-    permission_classes = [IsSuperUser]
 
     def get_queryset(self):
-
-        token_check_and_update(self.request)
 
         return Issue.objects.all()
 
@@ -132,6 +125,7 @@ class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
         serializer.save(auth_user_id=self.request.user)
 
 
+@permission_classes([IsSuperUser, ValidToken])
 class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Issue object representation, list and detailled view
@@ -139,19 +133,16 @@ class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
     """
 
     serializer_class = AdminCommentDetailSerializer
-    permission_classes = [IsSuperUser]
     http_method_names = ['get', 'head', 'delete']
 
     def get_queryset(self):
-
-        token_check_and_update(self.request)
 
         return Comment.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(auth_user_id=self.request.user)
 
-
+@permission_classes([IsOwnerList, ValidToken])
 class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
     """
     View that return a two different serializers ( READ, and WRITE wich offer the possibility to select
@@ -161,11 +152,9 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
     read_serializer_class = ContributorSynthetic
     write_serializer_class = ContributionFormCreator
-    permission_classes = [IsOwnerList]
 
     def get_queryset(self):
 
-        token_check_and_update(self.request)
         try:
             contributors = Contributors.objects.filter(project_id=self.args[0])
         except Exception as e:
@@ -179,19 +168,16 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
         serializer.save(project_id=Project.objects.get(id=self.args[0]))
 
 
+@permission_classes([IsOwnerList, ValidToken])
 class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
     """
     View that return the view of a contribution relation object.
     """
     serializer_class = ContributorSynthetic
     http_method_names = ['get', 'head', 'delete']
-    permission_classes = [IsOwnerList]
 
     def get_queryset(self):
 
-        token_check_and_update(self.request)
-
-        contributors = [contrib.id for contrib in Contributors.objects.filter(project_id=self.args[0])]
         try:
             contributor_user = Contributors.objects.get(id=self.args[1])
             return [contributor_user]
@@ -205,6 +191,7 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
         return contributor_user
 
 
+@permission_classes([IsOwner|UserPermission, ValidToken])
 class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Issue object representation, list and detailled view
@@ -213,11 +200,8 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
-    permission_classes = [IsOwner|UserPermission]
 
     def get_queryset(self):
-
-        token_check_and_update(self.request)
 
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
 
@@ -238,6 +222,7 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
         serializer.save(project_id=Project.objects.get(id=id_refs[0]))
 
 
+@permission_classes([IsOwner|UserPermission, ValidToken])
 class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Comment object representation, list and detailled view
@@ -246,11 +231,8 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
-    permission_classes = [IsOwner|UserPermission]
 
     def get_queryset(self):
-
-        token_check_and_update(self.request)
 
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
         issues = [issue.id for issue in Issue.objects.filter(project_id=id_refs[0])]

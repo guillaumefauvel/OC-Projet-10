@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
+from rest_framework.authtoken import views
 
 from api.views import (
     UserAPIView,
@@ -37,10 +38,11 @@ project_router.register('([0-9]+)/issues/([0-9]+)/comments', ProjectCommentView,
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', UserCreateAPIView.as_view(), name='signup'),
-    path('login/', CustomLoginView.as_view()),
-    path('logout/', LogoutView.as_view()),
+    path('login/', CustomLoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
 
     path('api-auth/', include('rest_framework.urls')),
+    path('api-token-auth/', views.obtain_auth_token),
     path('api/', include(router.urls)),
     path('api/projects/', include(project_router.urls), name='project'),
 ]
