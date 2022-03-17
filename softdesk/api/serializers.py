@@ -61,9 +61,8 @@ class ContributorSynthetic(ModelSerializer):
     def get_username(self, instance): # TODO Modify
 
         query = User.objects.get(id=instance.user_id.id)
-        fullname = query.first_name + "" + query.last_name
 
-        return fullname
+        return query.username
 
 
 class ProjectListSerializer(ModelSerializer):

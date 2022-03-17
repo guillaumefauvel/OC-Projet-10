@@ -5,7 +5,7 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
 
-from .exceptions import ProjectExeption
+from .exceptions import ProjectException
 from .models import Contributors, Project, Issue, Comment
 from login.models import User
 
@@ -163,7 +163,7 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
 
         try:
             contributors = Contributors.objects.filter(project_id=self.args[0])
-        except Exception as e:
+        except:
             raise NotFound()
         if not contributors:
             raise NotFound()
@@ -186,7 +186,10 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
 
         try:
             contributor_user = Contributors.objects.get(id=self.args[1])
-            return [contributor_user]
+            if contributor_user.project_id.id == int(self.args[0]):
+                return [contributor_user]
+            else:
+                raise NotFound()
         except:
             raise NotFound()
 
@@ -218,7 +221,7 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
                 Project.objects.get(id=id_refs[0])
                 raise NotFound()
             except ObjectDoesNotExist:
-                raise ProjectExeption
+                raise ProjectException
         return issues
 
     def perform_create(self, serializer):
@@ -250,7 +253,7 @@ class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
             Project.objects.get(id=id_refs[0])
             raise NotFound()
         except ObjectDoesNotExist:
-            raise ProjectExeption
+            raise ProjectException
 
     def perform_create(self, serializer):
 

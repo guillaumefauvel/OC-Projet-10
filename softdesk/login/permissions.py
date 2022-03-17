@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions
 from api.models import Contributors, Project
-from api.exceptions import ProjectExeption
+from api.exceptions import ProjectException, TokenException, MissingTokenException
 from rest_framework.authtoken.models import Token
 import re
 
@@ -11,15 +11,20 @@ class ValidToken(permissions.BasePermission):
 
     def has_permission(self, request, view):
 
+        return True
+
         regex = re.compile('^HTTP_')
         header_infos = dict((regex.sub('', header), value) for (header, value)
              in request.META.items() if header.startswith('HTTP_'))
         try:
             token = header_infos['AUTHORIZATION'].split()[1]
         except KeyError:
-            return False
+            raise MissingTokenException
 
-        return Token.objects.get(user=request.user) == Token.objects.get(key=token)
+        if Token.objects.get(user=request.user) == Token.objects.get(key=token):
+            return True
+        else:
+            raise TokenException
 
 
 class IsSuperUser(permissions.BasePermission):
@@ -43,7 +48,7 @@ class IsOwnerList(permissions.BasePermission):
         try:
             project_ref = Project.objects.get(id=project_id)
         except ObjectDoesNotExist:
-            raise ProjectExeption()
+            raise ProjectException()
 
         return project_ref.auth_user_id == request.user
 

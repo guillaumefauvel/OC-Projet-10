@@ -17,6 +17,7 @@ from api.views import (
 from login.views import (
     UserCreateAPIView,
     CustomLoginView,
+    SucessLogin,
     LogoutView,
 )
 
@@ -39,6 +40,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', UserCreateAPIView.as_view(), name='signup'),
     path('login/', CustomLoginView.as_view(), name='login'),
+    path('login/success', SucessLogin.as_view(), name='success-login'),
     path('logout/', LogoutView.as_view(), name='logout'),
 
     path('api-auth/', include('rest_framework.urls')),
