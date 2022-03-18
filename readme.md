@@ -32,7 +32,7 @@ Liste des points d'entrée :
 
 | Requête | Réponse | Opérations CRUD |
 | ----------- | ----------- | ----------- | 
-| `projects` | Une liste de tout les projets |`GET` `POST` `POST`| 
+| `projects` | Une liste de tout les projets |`GET` `POST`| 
 | `projects/<project_id>` | Un projet | `GET` `PUT` `DELETE`| 
 | `projects/<project_id>/users` | Une liste des contributeurs | `GET` `POST`| 
 | `projects/<project_id>/users/<contribution_id>` | Une contribution | `GET` `PUT` `DELETE`| 
@@ -40,10 +40,13 @@ Liste des points d'entrée :
 | `projects/<project_id>/issues/<issue_id>` | Un issue | `GET` `PUT` `DELETE`| 
 | `projects/<project_id>/issues/<issue_id>/comments` | Une liste des commentaires | `GET` `POST`| 
 | `projects/<project_id>/issues/<issue_id>/comments/<comment_id>/` | Un commentaire | `GET` `PUT` `DELETE`| 
+| `users` | Une liste de tout les utilisateurs, accessible aux SuperUser uniquement |`GET` | 
 
 > Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/api/`. 
 
----
+Si vous désirez plus de détail sur les requêtes retrouvez la documentation sur ce lien : [https://documenter.getpostman.com/view/18501202/UVsMvmHX](https://documenter.getpostman.com/view/18501202/UVsMvmHX)
+
+--
 
 ## Connexion et Authentification
 

@@ -28,9 +28,13 @@ class ValidToken(permissions.BasePermission):
 
 
 class IsSuperUser(permissions.BasePermission):
-    """ Give the permission to CRUD any object if he is a Superuser"""
+    """ Give the permission to CRUD any object if he is a SuperUser"""
 
     def has_permission(self, request, view):
+
+        return request.user.is_superuser
+
+    def has_object_permission(self, request, view, obj):
 
         return request.user.is_superuser
 

@@ -1,18 +1,15 @@
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponseRedirect
-from rest_framework.decorators import permission_classes
 
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
 
 from .serializers import UserCreateSerializer
-
 from login.models import User
-
 from api.exceptions import UserNotFound, BadPassword
 
 

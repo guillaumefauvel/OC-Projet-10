@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.exceptions import NotFound
 
+from rest_framework.exceptions import NotFound
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
@@ -19,7 +19,6 @@ from .serializers import (
     CommentListSerializer,
     CommentDetailSerializer,
     ContributionFormCreator,
-    AdminCommentDetailSerializer,
     ContributorSynthetic,
 )
 
@@ -89,7 +88,7 @@ class UserAPIView(MultipleSerializerMixin, ModelViewSet):
         return User.objects.all()
 
 
-@permission_classes([IsOwner|UserPermission, ValidToken])
+@permission_classes([IsSuperUser|IsOwner|UserPermission, ValidToken])
 class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Project object representation, list and detailled view
@@ -113,42 +112,7 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
         )
 
 
-@permission_classes([IsSuperUser, ValidToken])
-class IssueAPIView(MultipleSerializerMixin, ModelViewSet):
-    """
-    View that return two types a Issue object representation, list and detailled view
-    It return every Issue object.
-    """
-
-    serializer_class = IssueListSerializer
-    detail_serializer_class = IssueDetailSerializer
-
-    def get_queryset(self):
-
-        return Issue.objects.all()
-
-    def perform_create(self, serializer):
-        serializer.save(auth_user_id=self.request.user)
-
-
-@permission_classes([IsSuperUser, ValidToken])
-class CommentAPIView(MultipleSerializerMixin, ModelViewSet):
-    """
-    View that return two types a Issue object representation, list and detailled view
-    It return every Comment object.
-    """
-
-    serializer_class = AdminCommentDetailSerializer
-    http_method_names = ['get', 'head', 'delete']
-
-    def get_queryset(self):
-
-        return Comment.objects.all()
-
-    def perform_create(self, serializer):
-        serializer.save(auth_user_id=self.request.user)
-
-@permission_classes([IsOwnerList, ValidToken])
+@permission_classes([IsSuperUser|IsOwnerList, ValidToken])
 class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
     """
     View that return a two different serializers ( READ, and WRITE wich offer the possibility to select
@@ -174,7 +138,7 @@ class ProjectUserView(ReadWriteSerializerMixin, ModelViewSet):
         serializer.save(project_id=Project.objects.get(id=self.args[0]))
 
 
-@permission_classes([IsOwnerList, ValidToken])
+@permission_classes([IsSuperUser|IsOwnerList, ValidToken])
 class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
     """
     View that return the view of a contribution relation object.
@@ -200,7 +164,7 @@ class ProjectUserDetailView(RetrieveUpdateDestroyAPIView, ModelViewSet):
         return contributor_user
 
 
-@permission_classes([IsOwner|UserPermission, ValidToken])
+@permission_classes([IsSuperUser|IsOwner|UserPermission, ValidToken])
 class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Issue object representation, list and detailled view
@@ -231,7 +195,7 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
         serializer.save(project_id=Project.objects.get(id=id_refs[0]))
 
 
-@permission_classes([IsOwner|UserPermission, ValidToken])
+@permission_classes([IsSuperUser|IsOwner|UserPermission, ValidToken])
 class ProjectCommentView(MultipleSerializerMixin, ModelViewSet):
     """
     View that return two types a Comment object representation, list and detailled view

@@ -139,16 +139,3 @@ class CommentDetailSerializer(ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'issue_id', 'auth_user_id', 'created_time', 'description']
-
-
-class AdminCommentDetailSerializer(ModelSerializer):
-
-    project_id = serializers.SerializerMethodField('get_project_id')
-
-    class Meta:
-        model = Comment
-        fields = ['id', 'project_id', 'issue_id', 'auth_user_id', 'created_time', 'description']
-
-    def get_project_id(self, obj):
-
-        return obj.issue_id.project_id.id
