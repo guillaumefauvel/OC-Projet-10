@@ -36,7 +36,6 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
-
     class Meta:
         get_latest_by = ['id']
 
