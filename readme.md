@@ -28,10 +28,23 @@ Le point d'entrée principal permettant d'accéder à la liste des projets est [
 
 ## Utilisation et documentation des points d'entrées
 
-Liste des points d'entrée :
+### Authentification :
+
+| Requête | Fonctions | Opérations CRUD |
+| ----------- | ----------- | ----------- | 
+| `signup/` | Création de compte | `POST` |
+| `login/` | Connexion | `POST` |
+| `logout/` | Déconnexion | `GET` |
+| `api-token-auth/` | Renvois le token | `POST` |
+||||
+
+> Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/`. 
+
+### Gestion de projet :
 
 | Requête | Réponse | Opérations CRUD |
-| ----------- | ----------- | ----------- | 
+| ----------- | ----------- | ----------- |
+| `users` | Une liste de tout les utilisateurs, accessible aux SuperUser uniquement |`GET` |
 | `projects` | Une liste de tout les projets |`GET` `POST`| 
 | `projects/<project_id>` | Un projet | `GET` `PUT` `DELETE`| 
 | `projects/<project_id>/users` | Une liste des contributeurs | `GET` `POST`| 
@@ -40,21 +53,23 @@ Liste des points d'entrée :
 | `projects/<project_id>/issues/<issue_id>` | Un issue | `GET` `PUT` `DELETE`| 
 | `projects/<project_id>/issues/<issue_id>/comments` | Une liste des commentaires | `GET` `POST`| 
 | `projects/<project_id>/issues/<issue_id>/comments/<comment_id>/` | Un commentaire | `GET` `PUT` `DELETE`| 
-| `users` | Une liste de tout les utilisateurs, accessible aux SuperUser uniquement |`GET` | 
+||||
 
 > Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/api/`. 
 
-Si vous désirez plus de détail sur les requêtes retrouvez la documentation sur ce lien : [https://documenter.getpostman.com/view/18501202/UVsMvmHX](https://documenter.getpostman.com/view/18501202/UVsMvmHX)
+> **Si vous désirez plus de détail sur les requêtes retrouvez la documentation sur ce lien** : [https://documenter.getpostman.com/view/18501202/UVsMvmHX](https://documenter.getpostman.com/view/18501202/UVsMvmHX)
 
---
+
+---
+
 
 ## Connexion et Authentification
 
 L'authentication s'effectue en 3 étapes.
-1. Commencez par créer un nouveau compte à l'adresse `http://localhost:8000/signup`
-2. Connectez-vous ensuite à l'adresse `http://localhost:8000/login`
+1. Commencez par créer un nouveau compte à l'adresse `http://localhost:8000/signup/`
+2. Connectez-vous ensuite à l'adresse `http://localhost:8000/login/`
 3. Une fois connecté vous pouvez récupérer votre **Token** en effectuant une requête `POST` en fournissant dans le body
-   votre `username` et votre `password` en form-data ou au format JSON* à l'adresse suivante`http://localhost:8000/api-token-auth`.
+   votre `username` et votre `password` en form-data ou au format JSON* à l'adresse suivante`http://localhost:8000/api-token-auth/`.
    Une fois votre token obtenu, veillez à le fournir dans toute vos prochaînes requêtes dans le **Header** sous cette forme : 
    KEY : `Authorization` / VALUE : `token 966e46ae995266f15aca2a3b090ae0bcaa3aef5c`
    
@@ -84,4 +99,4 @@ Chaque utilisateur possède un certain nombre de droits, en voici la liste :
 | **Non-Contributor** | N'est pas inscrit dans les contributeurs d'un projet | Ne peut qu'accéder à l'aperçu d'un projet |
 | **Non-Connecté** | Utilisateur non connecté | Accès aux pages d'enregistrement et de connection uniquement |
 
-> Lors de la création d'un nouveau projet, l'auteur obtient automatiquement de le statut de `Moderator`.
+> Lors de la création d'un nouveau projet, l'auteur obtient automatiquement le statut de `Moderator`.

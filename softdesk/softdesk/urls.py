@@ -38,7 +38,7 @@ urlpatterns = [
     path('login/success', SucessLogin.as_view(), name='success-login'),
     path('logout/', LogoutView.as_view(), name='logout'),
 
-    path('api-auth/', include('rest_framework.urls')),
+    path('api-auth/', include('rest_framework.urls')), # TODO - Delete when production
     path('api-token-auth/', views.obtain_auth_token),
     path('api/', include(router.urls)),
     path('api/projects/', include(project_router.urls), name='project'),
