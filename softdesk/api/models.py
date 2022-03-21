@@ -5,8 +5,8 @@ from django.conf import settings
 class Contributors(models.Model):
 
     PERMISSION_CHOICES = (
-        ('Moderator','Moderator'),
-        ('Contributor','Contributor'),
+        ('Moderator', 'Moderator'),
+        ('Contributor', 'Contributor'),
     )
 
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='contribution')
