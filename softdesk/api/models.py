@@ -12,7 +12,7 @@ class Contributors(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='contribution')
     project_id = models.ForeignKey('Project', null=True, on_delete=models.CASCADE, related_name='contrib_project')
     permission = models.CharField(choices=PERMISSION_CHOICES, max_length=32)
-    role = models.CharField(max_length=32)
+    role = models.CharField(max_length=64)
 
     def __str__(self):
         rep = f'Contributors({self.user_id}, {self.project_id}, {self.permission}, {self.role})'
@@ -37,7 +37,7 @@ class Project(models.Model):
         return self.title
 
     class Meta:
-        get_latest_by = ['id']
+        ordering = ['created_time']
 
 class Issue(models.Model):
 
@@ -72,6 +72,8 @@ class Issue(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        ordering = ['-created_time']
 
 class Comment(models.Model):
 
@@ -82,3 +84,6 @@ class Comment(models.Model):
 
     def __str__(self):
         return str(self.description)
+
+    class Meta:
+        ordering = ['-created_time']

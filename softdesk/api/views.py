@@ -107,7 +107,7 @@ class ProjectAPIView(MultipleSerializerMixin, ModelViewSet):
         Contributors.objects.create(
             user_id=self.request.user,
             project_id=Project.objects.latest(),
-            permission='Contributor',
+            permission='Moderator',
             role='Author'
         )
 

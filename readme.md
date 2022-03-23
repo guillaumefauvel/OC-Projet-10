@@ -57,7 +57,7 @@ Le point d'entrée principal permettant d'accéder à la liste des projets est [
 
 > Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/api/`. 
 
-> **Si vous désirez plus de détail sur les requêtes retrouvez la documentation sur ce lien** : [https://documenter.getpostman.com/view/18501202/UVsMvmHX](https://documenter.getpostman.com/view/18501202/UVsMvmHX)
+> **Si vous désirez plus de détail sur les requêtes retrouvez la documentation sur ce lien** : [https://documenter.getpostman.com/view/20119383/UVsSN3wT](https://documenter.getpostman.com/view/20119383/UVsSN3wT)
 
 
 ---
@@ -80,6 +80,15 @@ L'authentication s'effectue en 3 étapes.
     "password": "votre-mots-de-passe"
   }
 ```   
+
+##### Si vous utiliser Postman : 
+1. Afin de ne pas avoir à saisir manuellement les CSRF-Token, ajoutez ce morceau de code dans les Tests de chaque requête : 
+    ```
+    var xsrfCookie = postman.getResponseCookie("csrftoken");
+    postman.setEnvironmentVariable('csrftoken', xsrfCookie.value);
+    ```
+2. Créer un environnement dans Postman et ajoutez-y la variable `csrftoken`. 
+3. Dans le Header, ajoutez une nouvelle paire clé-valeur où la clé = `X-CSRFToken` et la valeur = `{{csrftoken}}`.
 
 ---
 
