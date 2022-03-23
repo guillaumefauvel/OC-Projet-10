@@ -5,13 +5,6 @@ from login.models import User
 from .models import Contributors, Project, Issue, Comment
 
 
-class UserSerializer(ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'password', 'email']
-
-
 class UserListSerializer(ModelSerializer):
 
     class Meta:
@@ -58,7 +51,7 @@ class ContributorSynthetic(ModelSerializer):
         fields = ['id', 'user_id', 'username', 'permission', 'role']
         read_only_fields = ['id', 'user_id', 'username']
 
-    def get_username(self, instance): # TODO Modify
+    def get_username(self, instance):
 
         query = User.objects.get(id=instance.user_id.id)
 
@@ -99,8 +92,8 @@ class IssueListSerializer(ModelSerializer):
     class Meta:
         model = Issue
         fields = ['id', 'title', 'tag', 'priority', 'status',
-                  'project_id', 'auth_user_id', 'assignee_user_id', 'created_time']
-        read_only_fields = ['project_id', 'auth_user_id', 'assignee_user_id']
+                  'project_id', 'auth_user_id', 'assignee_user', 'created_time']
+        read_only_fields = ['project_id', 'auth_user_id', 'assignee_user']
 
 
 class IssueDetailSerializer(ModelSerializer):
@@ -112,7 +105,7 @@ class IssueDetailSerializer(ModelSerializer):
         model = Issue
         fields = ['id', 'title', 'tag',
                   'priority', 'desc', 'status',
-                  'project_id', 'assignee_user_id',
+                  'project_id', 'assignee_user',
                   'auth_user_id', 'created_time',
                   'issue_comments']
 
@@ -122,7 +115,8 @@ class IssueDetailSerializer(ModelSerializer):
 
     def get_issue_comments(self, instance):
         queryset = instance.issue_comments.all()
-        serializer = CommentListSerializer(queryset, many=True, context={'request': self.instance}) # TODO
+        serializer = CommentListSerializer(queryset, many=True, context={'request': self.instance})
+
         return serializer.data
 
 

@@ -193,6 +193,7 @@ class ProjectIssueView(MultipleSerializerMixin, ModelViewSet):
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
         serializer.save(auth_user_id=self.request.user)
         serializer.save(project_id=Project.objects.get(id=id_refs[0]))
+        serializer.save(assignee_user=Project.objects.get(id=id_refs[0]).auth_user_id)
 
 
 @permission_classes([IsSuperUser|IsOwner|UserPermission, ValidToken])
