@@ -22,7 +22,7 @@ from .serializers import (
     ContributorSynthetic,
 )
 
-from login.permissions import IsOwner, IsOwnerList, IsContributor, IsSuperUser, UserPermission, ValidToken
+from login.permissions import IsOwner, IsOwnerList, IsSuperUser, UserPermission, ValidToken
 
 class ReadWriteSerializerMixin(object):
     """

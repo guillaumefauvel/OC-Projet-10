@@ -38,6 +38,8 @@ class Project(models.Model):
 
     class Meta:
         ordering = ['created_time']
+        get_latest_by = ['created_time']
+
 
 class Issue(models.Model):
 

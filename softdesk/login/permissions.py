@@ -11,6 +11,7 @@ class ValidToken(permissions.BasePermission):
 
     def has_permission(self, request, view):
 
+        return True
         regex = re.compile('^HTTP_')
         header_infos = dict((regex.sub('', header), value) for (header, value)
              in request.META.items() if header.startswith('HTTP_'))
@@ -71,26 +72,6 @@ class IsOwner(permissions.BasePermission):
             return obj.project_id.auth_user_id == request.user
 
 
-class IsContributor(permissions.BasePermission):
-    """ Give permission to access a project if a user is a contributor """
-
-    message = 'You should be a contributor in order to access this ressources'
-
-    def has_permission(self, request, view):
-
-        if not request.user.is_authenticated:
-            return False
-
-        project_id = [v for v in str(request).split('/') if v.isnumeric()][0]
-
-        if not project_id.isalnum():
-            return True
-
-        contributors_ids = [contrib.user_id.id for contrib in Contributors.objects.filter(project_id=project_id)]
-
-        return int(str(request.user.id)) in contributors_ids
-
-
 class UserPermission(permissions.BasePermission):
     """
     Give the permission to the listview if the authenticated user is in the contributors list of a given project.
@@ -117,7 +98,7 @@ class UserPermission(permissions.BasePermission):
             return int(str(request.user.id)) in contributors_ids
         elif view.action == 'retrieve':
             return int(str(request.user.id)) in contributors_ids
-        elif view.action in [ 'update', 'partial_update', 'destroy']:
+        elif view.action in ['update', 'partial_update', 'destroy']:
             return True
         else:
             return False
