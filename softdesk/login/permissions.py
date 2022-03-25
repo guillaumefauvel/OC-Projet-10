@@ -11,7 +11,6 @@ class ValidToken(permissions.BasePermission):
 
     def has_permission(self, request, view):
 
-        return True
         regex = re.compile('^HTTP_')
         header_infos = dict((regex.sub('', header), value) for (header, value)
              in request.META.items() if header.startswith('HTTP_'))
